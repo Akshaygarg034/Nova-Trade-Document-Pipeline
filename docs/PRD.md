@@ -2,8 +2,8 @@
 
 **Nova · Full-Stack AI Engineer DAW · Part 1**
 
-> Every number here is measured — from `evals/run_eval.py` and the `agent_spans`
-> table — not estimated.
+> Every number here is measured, not estimated. They come from
+> `evals/run_eval.py` and the `agent_spans` table in the running system.
 
 ---
 
@@ -11,343 +11,380 @@
 
 ### What is Nova, and what can't traditional SaaS do?
 
-Nova is GoComet's move from selling software that helps people do logistics work to
-software that does the work and is measured on the result.
+Nova is GoComet moving from software that helps people do the work, to
+software that does the work and is judged on the result.
 
-Traditional enterprise SaaS keeps its business logic identical for every customer —
-that uniformity is where the margin comes from. Anything customer-specific gets
-pushed back onto the user as configuration, or onto a services team. In logistics
-that's fatal, because the customer-specific part *is* the work. Every CG team
-validates against rules that exist only in an experienced operator's head: this
-customer needs Rotterdam not Antwerp, these three HS codes are pre-classified, this
-consignee name must match the customs registration exactly. No dashboard captures
-that. So software handles the tidy 20% and hands the messy 80% back to a human,
-which is exactly backwards.
+Normal enterprise software has to behave the same way for every customer.
+That sameness is where the profit comes from. Anything specific to one
+customer gets pushed back onto the user as settings, or handed to a services
+team.
 
-LLM agents change the economics. Encoding idiosyncratic per-customer rules is now
-cheap enough that software can absorb the exception handling instead of returning
-it. Nova is the platform built on that bet: a generic engine — workflow
-orchestrator, agent orchestrator, app builder, data layer — where all customer
-specificity lives in configuration, and agents run against governed context with
-tenant isolation, audit trails and cost controls rather than ad-hoc prompting.
+In logistics that falls apart, because the customer-specific part *is* the
+work. Every cargo team checks documents against rules that live in one
+experienced person's head. This customer clears customs at Rotterdam, not
+Antwerp. These three HS codes are pre-approved. This consignee name must match
+the customs record exactly. No dashboard holds any of that. So the software
+handles the easy 20% and hands the messy 80% back to a human, which is
+backwards.
 
-*(197 words)*
+AI agents change the maths. Writing down odd, customer-specific rules is now
+cheap enough that the software can absorb the exceptions instead of returning
+them. Nova is built on that idea: one generic engine, everything
+customer-specific kept in config, and agents that run with real controls —
+tenant isolation, audit trails and cost limits.
+
+*(195 words)*
 
 ### What is the FDE model and why does GoComet use it for Nova?
 
-A Forward Deployed Engineer does discovery, design, build and deployment as one
-person, sitting with the client instead of behind a spec.
+A Forward Deployed Engineer does the discovery, the design, the build and the
+deployment. One person, sitting with the client, instead of working from a
+written spec.
 
-Nova needs it because of what the platform is: a generic engine plus per-client
-configuration. That configuration can't be gathered conventionally, because nobody
-can write a spec for knowledge they hold tacitly. Ask a CG operator what rules they
-apply and you'll get five. Watch them work for a day and you'll find forty —
-including "if it's this supplier I always check the weight twice," which they'd
-never think to mention because to them it isn't a rule, it's just what you do.
+Nova needs this because of what it is: a generic engine plus per-client
+config. You cannot gather that config the usual way, because nobody can write
+a spec for knowledge they hold without thinking about it. Ask a cargo operator
+what rules they follow and you get five. Watch them work for a day and you
+find forty. One will be "if it's this supplier I always check the weight
+twice" — which they would never think to mention, because to them it is not a
+rule, it is just how the job is done.
 
-An engineer extracts that faster than a PM, because they can build it in the room
-and ask "like this?" The feedback loop collapses from weeks to minutes, and each
-answer gets tested against something real rather than someone's recollection.
+An engineer gets that out faster than a PM, because they can build it in the
+room and ask "like this?". The loop drops from weeks to minutes, and every
+answer gets tested against something real.
 
-There's a second reason: Nova is early. The engine's abstractions are still being
-decided. Whoever configures the first ten clients discovers which things genuinely
-vary and which only appear to — and that has to flow straight back into the
-platform. GoComet's AOE pairing, one engineer and one client partner with no layers
-between, exists to keep that loop short.
+There is a second reason. Nova is early, so the engine's shape is still being
+decided. Whoever sets up the first ten clients finds out which things really
+vary between customers and which only look like they do. That has to feed
+straight back into the platform.
 
-*(199 words)*
+*(197 words)*
 
 ### What does "System of Outcomes" mean?
 
-Three generations, distinguished by what the software is accountable for.
+Three generations of software, told apart by what the software is responsible
+for.
 
-A **System of Record** stores truth — an ERP, a TMS. Data goes in, stays correct,
-comes out as reports. Its value is accuracy of the record; humans do all the work.
-Priced per seat.
+A **System of Record** stores the truth. An ERP, a TMS. Data goes in, stays
+correct, comes out as reports. Its value is an accurate record. People still
+do all the work. Sold per seat.
 
-A **System of Engagement** helps people collaborate on that data: dashboards,
-queues, inboxes. It makes work easier to coordinate, but the work is still entirely
-human. It makes a CG operator's day more organised without removing a single field
-they have to read.
+A **System of Engagement** helps people work together on that data.
+Dashboards, queues, inboxes. It makes work easier to organise, but the work is
+still fully human. It makes a cargo operator's day tidier without removing a
+single field they have to read.
 
-A **System of Outcomes** performs the work and is measured on the result. Not "we
-stored your 400 documents" and not "here's a nice queue," but "validation cycle time
-went from three days to four hours and 78% of documents cleared untouched." Its
-value is the outcome, so the natural pricing is per outcome, not per seat.
+A **System of Outcomes** does the work and is judged on the result. Not "we
+stored your 400 documents", and not "here is a tidy queue", but "checking time
+dropped from three days to four hours, and 78% of documents cleared without
+anyone touching them". The value is the result, so charging per result makes
+more sense than per seat.
 
-The real distinction is accountability. A System of Record is wrong if the data is
-wrong. A System of Outcomes is wrong if the *shipment is delayed* — even when every
-stored field was technically correct. That's harder to sell and harder to build, and
-it's why trust and evidence matter more here than features.
+The real difference is responsibility. A System of Record is wrong when the
+data is wrong. A System of Outcomes is wrong when the shipment is late, even
+if every stored field was correct. That is harder to build and harder to sell.
+It is also why trust and evidence matter more here than features.
 
 *(198 words)*
 
 ---
 
-## 2 · Problem statement
+## 2 · The problem
 
-SU emails documents. CG opens every attachment, reads every field, checks each against
-what that customer requires, and types an amendment email. SU fixes, resubmits. Two to
-four cycles per shipment is normal.
+A supplier emails documents. The cargo team reads every field of every
+attachment, checks each one against what that customer needs, and types an
+email listing what is wrong. The supplier fixes it and resends. Two to four
+rounds per shipment is normal.
 
-| # | Failure mode | Cost |
+| # | What goes wrong | What it costs |
 |---|---|---|
-| 1 | Rules live in operators' heads | New hires err for weeks; leave cover is unreliable |
-| 2 | Every field read manually, every time (~8 fields × 3–4 docs) | Attention spent on the 80% that's fine |
-| 3 | **Partial amendments** — CG finds two problems, resubmit reveals a third | Each round trip adds 4–24h and demurrage |
-| 4 | No queue visibility | Load can't be balanced; escalation is reactive |
-| 5 | No audit trail — approval lives in a mailbox | Disputes six months later are unanswerable |
-| 6 | Throughput capped by headcount | Volume growth needs linear hiring |
+| 1 | The rules only exist in people's heads | New hires make mistakes for weeks; leave cover is unreliable |
+| 2 | Every field read by hand, every time (8 fields × 3–4 docs) | Attention spent on the 80% that is fine |
+| 3 | **Half-finished amendments** — two problems found, a third appears after the fix | Each extra round adds 4 to 24 hours, and demurrage builds |
+| 4 | Nobody can see the queue | Work cannot be balanced; problems found late |
+| 5 | No audit trail — the approval sits in a mailbox | A dispute six months later cannot be answered |
+| 6 | Throughput limited by headcount | More volume means more hiring |
 
-**#3 is the one to design against.** The loop repeats not because the first review was
-careless but because it was *partial*. Checking every field against every rule in one
-pass attacks cycle count directly, which is where the hours go.
+**Number 3 is the one to design against.** The loop repeats not because the
+first review was careless, but because it was incomplete. Checking every field
+against every rule in one pass attacks the number of rounds, and the rounds
+are where the hours go.
 
-**First five minutes.** The operator uploads a document they know is wrong and within
-30 seconds sees: all eight fields with found-vs-required; the three problems flagged
-without the five healthy fields competing for attention; the exact source text on
-clicking a flagged field; a draft amendment listing all three correctly, close enough
-that they think *"I'd have written roughly that"*; and a field the agent couldn't read
-saying so rather than guessing.
+**The first five minutes.** The operator uploads a document they already know
+is wrong. Within 30 seconds they see all eight fields with found next to
+required; the three problems highlighted without the five healthy fields
+competing for attention; the exact text from the page when they click a
+flagged field; a draft email listing all three problems correctly; and any
+field the system could not read saying so instead of guessing.
 
-The five-minute test isn't "is it accurate" — it's **"does it show its work?"** Someone
-accountable for a customs filing won't trust a number without provenance. That is what
-converts a sceptic.
+The five-minute test is not "is it accurate". It is **"does it show its
+work?"** Nobody accountable for a customs filing trusts a number without
+seeing where it came from.
 
 ---
 
 ## 3 · Users and jobs to be done
 
-**Priya — CG validation operator.** Four years in freight documentation, ~40
-shipments/week across six customers, measured on shipments cleared without a customs
-issue. The work is repetitive rather than hard. She fears approving something wrong far
-more than she minds the tedium — a missed HS code is her name on the file. *Cares
-about:* not being blamed, and not re-reading the same document four times.
+**Priya — cargo control operator.** Four years in freight documentation, about
+40 shipments a week across six customers, judged on shipments that clear
+customs cleanly. She is far more afraid of approving something wrong than she
+is bothered by the repetition, because a missed HS code has her name on it.
+*Wants:* not to be blamed, and not to read the same document four times.
 
-**Marco — SU shipping coordinator.** Emails documents onward across many customers
-whose rules he half-remembers, and considers the job done once sent. Amendment requests
-arrive days later, out of context and incomplete, so he fixes two things and gets a
-third request. *Cares about:* being told everything that is wrong, once, specifically
-enough to act without a phone call.
+**Marco — supplier shipping coordinator.** Sends documents to many customers
+whose rules he half-remembers, and considers the job done once the email is
+sent. Amendment requests arrive days later, incomplete, so he fixes two things
+and gets a third request. *Wants:* to be told everything that is wrong, once,
+clearly enough to fix without a phone call.
 
-1. When **a document set arrives**, I want to **see every field checked against this
-   customer's rules in one pass**, so that **I send one amendment instead of finding
-   problems across three rounds**.
-2. When **the agent reports a value**, I want to **see the exact text it read and
-   where**, so that **I can accept it in two seconds instead of reopening the PDF**.
-3. When **a scan is too poor to read a field**, I want to **be told explicitly**, so
-   that **I check the two fields that need me, not all eight**.
-4. When **a discrepancy is found**, I want **a draft stating field, found, expected
-   and why it matters**, so that **I send it with one edit rather than writing it**.
-5. When **I take over an account**, I want to **read that customer's rules as a
-   file**, so that **I'm not making a new hire's mistakes for three weeks**.
-6. *(Marco)* When **an amendment arrives**, I want **every problem listed with mine
-   versus required**, so that **I fix everything in one resubmission**.
+1. When **a set of documents arrives**, I want to **see every field checked
+   against this customer's rules in one go**, so that **I send one amendment
+   instead of finding problems across three rounds**.
+2. When **the system reports a value**, I want to **see the exact text it read
+   and where**, so that **I can accept it in two seconds instead of reopening
+   the PDF**.
+3. When **a scan is too poor to read a field**, I want to **be told plainly**,
+   so that **I check the two fields that need me, not all eight**.
+4. When **a problem is found**, I want **a draft saying the field, what was
+   found, what is required and why it matters**, so that **I send it after one
+   edit instead of writing it**.
+5. When **I take over an account**, I want to **read that customer's rules as
+   a file**, so that **I am not making a new starter's mistakes for weeks**.
+6. *(Marco)* When **an amendment arrives**, I want **every problem listed with
+   mine next to what is required**, so that **I fix everything in one go**.
 
 ---
 
 ## 4 · Agent architecture
 
-**Why three.** There are exactly three questions here, each with different evidence and
-a different failure mode:
+Three different questions, each needing different evidence and each going
+wrong in a different way.
 
-| Agent | Question | Evidence | Fails by |
+| Agent | Question | Looks at | Fails by |
 |---|---|---|---|
-| **Extractor** | What does this document say? | pixels, page text | misreading |
-| **Validator** | Is what it says acceptable? | customer rule set | wrong rules |
-| **Router** | What happens next? | validation state | wrong policy |
+| **Extractor** | What does this document say? | page image | misreading |
+| **Validator** | Is what it says acceptable? | the customer's rules | wrong rules |
+| **Router** | What happens next? | the validation result | wrong policy |
 
-**Why not one prompt.** The decisive argument is a real failure. On our degraded scan
-the extractor returned `AMSTERDAM, NETHERLANDS` for Port of Discharge at 0.85, *fully
-grounded* — that text genuinely is on the page, in the *Place of Delivery* box. No
-self-check finds it: every question about the document passes. Only the customer rule
-("Acme clears at Rotterdam") catches it. One prompt has nowhere separate for that
-knowledge to live, and nowhere separate for it to fire.
+**Why not one big prompt.** The strongest argument is something that actually
+happened. On our poor-quality scan the extractor reported
+`AMSTERDAM, NETHERLANDS` as the Port of Discharge, at 0.85 confidence, and it
+passed every check we had. It was not making it up — Amsterdam really is
+printed on that page, in the *Place of Delivery* box. No self-checking finds
+that, because every question you can ask about the document comes back fine.
+Only the customer's rule that Acme clears at Rotterdam catches it, and in one
+big prompt there is nowhere for that rule to live.
 
-Three further consequences we rely on: each stage is **evaluated independently**; each
-uses **the right tool** (forcing vision, arithmetic and policy through one model means
-paying vision prices to compare two strings); and **rules change weekly while
-extraction logic doesn't**, so rules can be edited without re-testing the model path.
+The split also lets each stage be measured on its own and use the right tool.
+Pushing vision, arithmetic and policy through one model means paying vision
+prices to compare two strings. And rules change weekly while extraction logic
+does not, so rules can be edited without retesting the model path.
 
-**Why not five.** Preprocessing and confidence scoring aren't agents — they are
-deterministic functions with no judgement to exercise. Making them agents adds a
-handoff and a failure point to buy nothing.
+**Why not five.** A preprocessing agent and a confidence agent are not agents.
+They are plain functions with no judgement to make, so making them agents buys
+a handover and another failure point.
 
-| | Input | Output |
+| | Takes in | Gives back |
 |---|---|---|
-| Extractor | page images (vision only) | 8 fields: value, verdict, fused confidence, evidence quote, page, flags |
-| *Verification layer* | fields + independent page text | grounded fields — **code, not a model** |
-| Validator | grounded fields + rule YAML | per-field match/mismatch/uncertain with found, expected, severity, reason |
-| Router | validation state | decision + machine-readable policy reasons + draft email |
+| Extractor | page images only | 8 fields: value, verdict, confidence, quoted evidence, page, flags |
+| *Verification layer* | those fields + our own copy of the page text | verified fields. **Code, not a model** |
+| Validator | verified fields + the rule file | per field: match / mismatch / uncertain, with found, required, severity, reason |
+| Router | the validation result | a decision, the rules behind it, and a draft email |
 
-Roughly **planner / executor / verifier**, except the verifier isn't an agent — it's a
-deterministic layer around the executor, which is the point.
+That is roughly planner / executor / verifier, except the verifier is not an
+agent. It is deterministic code wrapped around the executor.
 
-**How they talk.** Structured handoff via typed Pydantic models, one direction, no
-shared mutable state. The Validator cannot see page images; the Router cannot see
-extraction internals. That forces each stage's output to be complete enough to act on —
-the same property that makes the UI and the audit trail possible.
+**How they talk.** Each stage hands the next a typed Pydantic object, one
+direction only, no shared editable state. The Validator cannot see the page
+images; the Router cannot see inside extraction. That forces each stage to
+produce output complete enough to act on alone, which is what makes the UI and
+the audit trail possible.
 
-**How state survives a crash.** Two mechanisms, because one is not enough and we
-measured that: LangGraph checkpoints each node on return, and the vision call is
-separately memoised on `(document bytes, model)`. LangGraph only checkpoints a node
-that *returns*, so a crash *inside* `extract` re-runs it — we saw double cost on one
-document. With both, crash-and-resume costs **$0.01063** against **$0.01064**
-uninterrupted. Each node also commits to SQLite before the next begins, so an
-unfinished run stays queryable. The cache stores the **raw reading, not the verified
-result**; caching the finished output made verification improvements invisible on
-already-processed documents. Detail in the technical write-up.
+**How state survives a crash.** Two mechanisms, because one is not enough and
+we found that out by testing. LangGraph checkpoints each step when it finishes.
+Separately, the vision call is remembered against the document's content and
+the model name.
+
+The second exists because the first has a gap: LangGraph only saves a step's
+output when the step *finishes*, so a crash *inside* extraction re-runs the
+whole step. We saw exactly that — two extraction calls, double cost, one
+document. With both, a crash and restart costs **$0.01063** against
+**$0.01064**. Each step also writes to SQLite before the next starts, so an
+unfinished run can still be inspected.
+
+The cache stores **what the model said, not what we concluded**. Caching the
+finished result made every improvement to our checking invisible on documents
+already seen, including in production.
 
 ---
 
-## 5 · LLM and tooling choices
+## 5 · Models and tools
 
 | Job | Model | Why |
 |---|---|---|
-| Extraction (vision) | `gpt-4.1` | Only stage where quality converts into fewer human touches. 90% of spend |
-| Entity-name equivalence | `gpt-4.1-mini` | One bounded judgement, ~200 tokens |
-| Router draft + rationale | `gpt-4.1-mini` | Input already structured; no vision |
-| NL → SQL | `gpt-4.1-mini` | Small schema, few-shot |
-| Rules, grounding, decisions | **no model** | Deterministic, free, identical every run |
+| Extraction (vision) | `gpt-4.1` | The only place better quality means fewer human touches. 90% of spend |
+| Company name comparison | `gpt-4.1-mini` | One small judgement call, ~200 tokens |
+| Draft email + explanation | `gpt-4.1-mini` | Input already structured, no images |
+| Plain English to SQL | `gpt-4.1-mini` | Small schema, a few examples |
+| Rules, verification, decisions | **no model** | Deterministic, free, same every time |
 
-Extraction is $0.0098 and ~9s; everything else together is $0.0006 and ~5s. Given that
-split, extraction is the only optimisation that matters. We chose the cheapest model
-that cleared the bar rather than the strongest available — at 100% accuracy on clean
-documents a larger model has nothing to buy.
+Extraction costs $0.0098 and takes ~9 s; everything else together costs
+$0.0006 and takes ~5 s. Because the split is that uneven, extraction is the
+only thing worth optimising. We picked the cheapest model that was good enough
+rather than the strongest available — at 100% accuracy on clean documents, a
+bigger model has nothing left to win.
 
-**Fallback for a bad document** — escalating *per field*, not per document:
+**When the document is poor quality**, the system escalates per field, not per
+document:
 
 ```
-Tier 0  digital PDF text layer                    free, exact, no model
-Tier 1  render 200 DPI → vision                   normal path, one call
-Tier 2  weak fields only: 300 DPI, deskew, re-ask
-Tier 3  two passes disagree → UNCERTAIN           never averaged
-Tier 4  still unreadable → null, surfaced to a human
+Step 0  digital PDF with a text layer       free, exact, no model
+Step 1  render at 200 DPI, read with vision the normal path, one call
+Step 2  weak fields only: 300 DPI, straighten, contrast, ask again
+Step 3  the two readings disagree           mark UNCERTAIN, never average
+Step 4  still unreadable                    report null, send to a human
 ```
 
-200 DPI is measured, not chosen: at 150 the model read `INV-2026-08841` as
-`INV:2026-08841` because the hyphen didn't resolve.
+200 DPI is measured, not guessed. At 150 DPI the model read `INV-2026-08841`
+as `INV:2026-08841`, because the hyphen did not come out clearly.
 
-**Orchestration: LangGraph** — for durable execution, not agent abstractions, of which
-we use none. The pipeline is a fixed DAG with no dynamic tool-calling; what we need is
-checkpointing, resumability, and somewhere clean to hang the human-in-the-loop
-interrupt Part 2 will require.
+**Why LangGraph:** for durable execution, not its agent features, which we do
+not use. The pipeline is a fixed sequence with no dynamic tool calling; what we
+need is checkpointing, resuming, and a clean place to pause for the human
+approval Part 2 requires.
 
-**Structured output** (strict JSON schema) for everything machine-consumed; the
-extractor's schema names all eight fields so the model cannot invent keys. We
-deliberately **avoid tool-calling loops** — the extractor is a single-shot transform
-with no agency to exercise. And we avoid a model wherever the answer is deterministic:
-the routing decision is a pure function precisely because "should this customs document
-be approved" must not vary between runs.
+**Structured output** (strict JSON schemas) for everything a machine reads. The
+extraction schema names all eight fields, so the model cannot invent one or
+drop one. We avoid **tool-calling loops** — the extractor does one job in one
+pass and has no decisions to make. We also avoid a model wherever the answer is
+fixed: the routing decision is plain code precisely because "should this customs
+document be approved" must not change between runs.
 
 ---
 
-## 6 · Trust, failure handling and evals
+## 6 · Trust, failure handling and testing
 
-Confidence shown to an operator is **not** the model's self-report:
+The confidence number an operator sees is **not** what the model claimed:
 
 ```
-final = model_confidence × grounding × format × corpus_trust × citation
-        (evidence located on the page · ICC/HS format rules ·
-         pdf_text 1.00 | ocr 0.80 | llm_transcript 0.70)
+final = the model's own confidence
+      × did we find the quoted text on the page
+      × does the value pass its format rule
+      × how much we trust our copy of the page
+        (PDF text 1.00 · OCR 0.80 · model transcript 0.70)
 ```
 
-Four mechanisms, each added after a specific observed failure (forensics in the
-write-up):
+Four mechanisms do the real work. Each was added after a failure we saw; the
+details are in the technical write-up.
 
-- **Mandatory evidence** — every `found` field carries a verbatim quote we re-locate in
-  an independent corpus. Extraction is **vision-only**, so the check is not circular.
-- **Word-boundary matching for short codes** — `CIF` matched inside **SPECIFICALLY**.
-- **Token alignment and exact digits** — `2026-08841` scored 1.00 against
-  `INV-2026-08841`; a truncation genuinely is a substring. Numbers get exactness.
-- **Snap-to-source** — the model *locates* a value; the document decides how it *reads*.
+- **Evidence is required.** Every found field must quote text from the page,
+  which we then look for ourselves in a separate copy of the page text.
+  Extraction is **vision-only** — the model never sees that text — so the check
+  is not the model agreeing with itself.
+- **Whole-word matching for short codes.** The Incoterm "CIF" was matched
+  inside the word **SPECIFICALLY** in the small print.
+- **Whole-token and exact-digit matching.** `2026-08841` scored 1.00 against
+  `INV-2026-08841`, because a shortened value is part of the full one.
+- **Snapping to the page.** The model finds the value; the document decides the
+  spelling. `Acne` becomes `Acme`. This can only move a value closer to what is
+  printed, so it cannot hide a real supplier mistake.
 
-`not_found` is a first-class correct answer, scored separately (2/2, 0 hallucinated).
-Many B/Ls carry no Incoterm; inventing one is worse than misreading a port.
+Reporting a field as absent is a correct answer in its own right, scored
+separately (2 of 2, 0 invented fields). Most Bills of Lading have no Incoterm,
+and inventing one is worse than misreading a port.
 
-**Low confidence.** Nothing below 0.85 is auto-approved, and uncertainty propagates: an
-unverified field is `UNCERTAIN` even if the rule would pass, though the record still
-shows what the rule *would* have said. At the Router, **unread fields outrank confirmed
-mismatches** — a document with both goes to review, not to an amendment email, because
-drafting from data we could not read risks asking the supplier to fix the wrong thing.
+**Low confidence.** Nothing below 0.85 is approved automatically, and
+uncertainty carries forward: an unverified field is marked uncertain even if
+the rule would have passed, though the record still shows what the rule *would*
+have said. At the Router, unreadable fields outrank confirmed mistakes — a
+document with both goes to a human, because writing an amendment from data we
+could not read risks telling the supplier to fix the wrong thing.
 
-**Loops and runaway cost.** `MAX_USD_PER_DOCUMENT` ($0.25) and `MAX_LLM_CALLS_PER_RUN`
-(12) checked *before* each call, raising rather than degrading; every call goes through
-one choke point, so these are enforceable rather than aspirational. Retries capped at 3,
-transient errors only. Re-extraction happens once, on weak fields only.
+**Runaway cost and loops.** `MAX_USD_PER_DOCUMENT` ($0.25) and
+`MAX_LLM_CALLS_PER_RUN` (12) are checked before every call and stop the run
+rather than cutting corners. Every call goes through one place in the code, so
+those limits are enforceable. Retries are capped at 3, temporary errors only.
+Re-reading happens once, on weak fields only.
 
-**Offline eval** (`evals/run_eval.py`). The headline metric is deliberately not accuracy
-but **escaped errors** — values wrong *and* auto-approved:
+**Offline test** (`evals/run_eval.py`) runs against a golden set where we know
+every correct answer. The headline number is deliberately not accuracy. It is
+**escaped errors**: values that were wrong *and* approved automatically.
 
-| | Clean | Degraded | All |
+| | Clean | Poor scan | All |
 |---|---|---|---|
 | Field accuracy | 100% | 62.5% | 87.5% |
-| Auto-approve accuracy | 100% | 100% | **100%** (16/16) |
+| Correct when it approved | 100% | 100% | **100%** (16/16) |
 | **Escaped errors** | **0** | **0** | **0** |
-| Surfaced-error recall | — | 100% (3/3) | 100% (3/3) |
-| Confidence separation | — | +0.14 | **+0.42** |
+| Wrong values it caught | — | 100% (3/3) | 100% (3/3) |
+| Confidence gap | — | +0.14 | **+0.42** |
 
-Plus seven offline unit suites that make no LLM calls, encoding every failure above as a
-regression test. *Caveat:* 24 readings across 3 documents — direction right, sample
-nowhere near enough to claim calibration.
+Seven more offline suites make no model calls at all; each locks in a bug we
+hit. The confidence gap is the difference between average confidence when the
+system is right (0.86) and wrong (0.44) — without it the number is decoration.
 
-**Online metric** — *escaped-error rate*: of fields auto-approved, the share a human
-later overturns. Measurable from day one, since the UI records every operator edit.
+**Honest limit:** 24 field readings across 3 documents. The direction is right
+and the mechanisms are sound, but that is nowhere near enough to claim the
+confidence scores are calibrated.
+
+**Online metric — escaped error rate:** of the fields approved automatically,
+what percentage a human later changes. Measurable from day one, because the UI
+records every operator edit against the stored decision.
 
 ---
 
 ## 7 · Metrics and success criteria
 
-> **North star: touchless validation rate** — the percentage of shipment document sets
-> reaching a *correct* CG decision with zero human field edits.
+> **North star: touchless rate** — the percentage of shipment document sets
+> that reach a *correct* decision with no human editing any field.
 
-Correctness is inside the definition, so it can't be gamed by approving more.
+Correctness is inside the definition, so it cannot be gamed by approving more.
 
-| Metric | Type | Target | Why |
+| Metric | Type | Target | Why this one |
 |---|---|---|---|
-| Escaped-error rate | quality | **0** | Only metric that can hurt a customer; guardrail on the north star |
-| Surfaced-error recall | quality | ≥95% | Of what we get wrong, how much we flag |
-| Median cycle time, email → decision | business | −50% | What CG is paid to shorten |
-| Amendment cycles per shipment | business | 2–4 → ≤1.5 | Attacks the loop, not keystrokes |
-| Draft-edit distance | product | ≤20% words changed | Whether the draft is sendable or a rewrite |
-| Uncertain-field rate by template | health | trended | A spike means a supplier changed their form |
-| Cost per document | health | <$0.05 | Must stay far under the labour it replaces |
-| p95 end-to-end latency | health | <60s | The tail is what operators feel |
+| Escaped error rate | quality | **0** | The only number that can hurt a customer. Guards the north star |
+| Wrong values caught | quality | ≥95% | Of what we get wrong, how much we flag |
+| Median time, email to decision | business | −50% | What the cargo team is paid to shorten |
+| Rounds per shipment | business | 2–4 → ≤1.5 | Attacks the loop, not the typing |
+| How much the draft is edited | product | ≤20% of words | Is the draft usable, or a rewrite |
+| Uncertain rate per form type | health | tracked | A jump means a supplier changed their form |
+| Cost per document | health | <$0.05 | Must stay well below the labour it replaces |
+| 95th percentile time | health | <60s | The slow tail is what operators feel |
 
-Draft-edit distance is the one I would fight for: every other metric can look healthy
-while CG quietly rewrites every email — at which point we have automated nothing and
-added a step.
+The draft-editing metric is the one I would fight for. Every other number can
+look healthy while the cargo team quietly rewrites every email — at which point
+we have automated nothing and added a step.
 
-**Go** (all must hold): zero escaped errors reaching the customer; touchless ≥40% on
-clean digital documents; median cycle time −50% vs the prior fortnight; ≥80% of drafts
-sent with ≤20% words changed; cost <$0.05/doc; and the operator keeps using it in week
-two without being asked.
+**Go** (all): zero escaped errors reaching the customer; touchless rate 40%+ on
+clean digital documents; median time halved against the previous fortnight; 80%+
+of drafts sent with ≤20% of words changed; cost under $0.05 a document; and the
+operator still chooses to use it in week two.
 
-**No-Go** (any): a wrong value reaches a customer via auto-approval; CG rewrites more
-than half the drafts; touchless <20%; or operators start ignoring uncertainty flags —
-the worst outcome, because it manufactures false confidence.
+**No-go** (any): a wrong value reaches a customer through automatic approval;
+the team rewrites more than half the drafts; touchless rate under 20%; or
+operators start ignoring the uncertainty flags. The last is worst, because it
+creates false confidence.
 
 ---
 
-## 8 · What's next
+## 8 · What I would build next
 
-1. **Multi-document shipments and cross-document consistency** (4d). A shipment is B/L
-   *plus* invoice *plus* packing list, and the highest-value check is not per-document —
-   it is whether consignee and HS code agree *across* all three. No single document can
-   fail that check, so a human always does it today.
-2. **A real golden set, 100+ documents across several templates** (3d). Everything in §6
-   rests on 24 readings. Without it I cannot defend the 0.85 threshold, safely try a
-   cheaper extraction model, or tell template drift from regression. It unblocks the
-   others, which is why it outranks them.
-3. **Geometric provenance** (2d) — match values to captions by coordinate, closing the
-   one surviving error class. I tried asking the model which box it read from; it
-   reports the caption it was *looking for*, so self-report fails.
-4. **Rule-set versioning per decision** (1d). Rules change underneath stored outcomes; a
-   dispute needs the rules *as they were*.
+1. **Multi-document shipments and cross-document checks** (4 days). A shipment
+   is a Bill of Lading *plus* an invoice *plus* a packing list, and the most
+   valuable check is whether consignee and HS code agree *across* all three. No
+   single document can fail that check, so a human always does it.
+2. **A proper golden set: 100+ documents across several carrier forms**
+   (3 days). Everything in section 6 rests on 24 readings. Without more data I
+   cannot defend the 0.85 threshold, try a cheaper model, or tell a form change
+   from a real regression. It unblocks the rest, so it comes first.
+3. **Matching values to labels by position** (2 days). Closes the one error we
+   still cannot catch: right text, wrong box. Asking the model which box it read
+   from does not work — it reports the box it was *looking for*.
+4. **Recording the rule version with each decision** (1 day). Rules change
+   underneath stored results, and a dispute needs the rules as they were.
 
-**Why not a nicer UI or more prompt engineering.** The UI is adequate, and Part 2 will
-reshape it around the real CG workflow anyway. Prompt engineering has the worst track
-record of anything I tried: every durable improvement came from deterministic
-verification *around* the model, while both prompt-level fixes that appeared to work
-either regressed at a different render resolution or were ignored outright. The model is
-good at reading pixels. The code should decide what to believe.
+**Why not a nicer UI or more prompt tuning.** The UI is good enough, and Part 2
+will reshape it around the real cargo workflow anyway. Prompt tuning has the
+worst track record of anything I tried: every lasting improvement came from
+deterministic checks *around* the model, while both prompt fixes that appeared
+to work either broke at a different image resolution or were ignored. The model
+is good at reading pixels. The code should decide what to believe.

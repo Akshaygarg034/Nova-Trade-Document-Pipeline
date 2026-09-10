@@ -36,49 +36,50 @@ DOCS = [
 ]
 
 CSS = """
-@page { size: A4; margin: 18mm 16mm; }
+@page { size: A4; margin: 13mm 13mm; }
 * { box-sizing: border-box; }
 body {
-  font: 10.5pt/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  color: #1a1a1a; max-width: 190mm; margin: 0 auto; padding: 10mm 4mm;
+  font: 9.6pt/1.32 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #1a1a1a; margin: 0; padding: 0;
 }
-h1 { font-size: 19pt; margin: 0 0 4pt; letter-spacing: -0.2pt; }
-h2 { font-size: 13.5pt; margin: 18pt 0 6pt; padding-bottom: 3pt;
+h1 { font-size: 17pt; margin: 0 0 3pt; letter-spacing: -0.2pt; }
+h2 { font-size: 11.8pt; margin: 9pt 0 3pt; padding-bottom: 2pt;
      border-bottom: 1px solid #d8dde3; }
-h3 { font-size: 11.5pt; margin: 13pt 0 4pt; }
-h4 { font-size: 10.5pt; margin: 10pt 0 3pt; color: #444; }
-p, li { margin: 0 0 6pt; }
-ul, ol { margin: 0 0 8pt; padding-left: 18pt; }
-li { margin-bottom: 3pt; }
+h3 { font-size: 10.3pt; margin: 7pt 0 2pt; }
+h4 { font-size: 10pt; margin: 7pt 0 2pt; color: #444; }
+p, li { margin: 0 0 3pt; }
+ul, ol { margin: 0 0 5pt; padding-left: 16pt; }
+li { margin-bottom: 2pt; }
 strong { font-weight: 650; }
 a { color: #1f5fa8; text-decoration: none; }
-hr { border: 0; border-top: 1px solid #e3e7ec; margin: 14pt 0; }
+hr { border: 0; border-top: 1px solid #e3e7ec; margin: 7pt 0; }
 
 code {
-  font: 9pt ui-monospace, "SF Mono", Consolas, monospace;
-  background: #f4f6f8; padding: 1pt 3pt; border-radius: 2pt;
+  font: 8.6pt ui-monospace, "SF Mono", Consolas, monospace;
+  background: #f4f6f8; padding: 0 2pt; border-radius: 2pt;
 }
 pre {
   background: #f7f9fb; border: 1px solid #e3e7ec; border-radius: 3pt;
-  padding: 7pt 9pt; overflow-x: auto; page-break-inside: avoid;
+  padding: 5pt 7pt; margin: 5pt 0; overflow-x: auto;
+  page-break-inside: avoid;
 }
-pre code { background: none; padding: 0; font-size: 8.4pt; line-height: 1.42; }
+pre code { background: none; padding: 0; font-size: 7.5pt; line-height: 1.3; }
 
 table {
-  border-collapse: collapse; width: 100%; margin: 8pt 0 12pt;
-  font-size: 9.3pt; page-break-inside: avoid;
+  border-collapse: collapse; width: 100%; margin: 5pt 0 8pt;
+  font-size: 8.4pt; page-break-inside: avoid;
 }
-th, td { border: 1px solid #dde2e8; padding: 4pt 6pt; text-align: left;
+th, td { border: 1px solid #dde2e8; padding: 2pt 3.5pt; text-align: left;
          vertical-align: top; }
 th { background: #f4f6f8; font-weight: 650; }
 
 blockquote {
-  margin: 8pt 0; padding: 6pt 10pt; border-left: 2.5pt solid #b9c4d0;
+  margin: 5pt 0; padding: 4pt 8pt; border-left: 2.5pt solid #b9c4d0;
   background: #f8fafc; color: #333;
 }
 blockquote p:last-child { margin-bottom: 0; }
 
-h2, h3 { page-break-after: avoid; }
+h1, h2, h3 { page-break-after: avoid; }
 """
 
 TEMPLATE = """<!doctype html>

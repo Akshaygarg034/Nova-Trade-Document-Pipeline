@@ -1,90 +1,88 @@
 # Technical Write-up · Nova Trade Document Pipeline
 
 ```
-                 ┌─────────── LangGraph state machine ───────────┐
-  PDF / image ───┼─▶ ingest ─▶ extract ─▶ validate ─▶ route ─▶ ⏹ │
-                 └──────┬─────────┬──────────┬──────────┬────────┘
-                        │ checkpoint + commit after each node
-              ┌─────────▼─────────▼──────────▼──────────▼────────┐
-              │                SQLite (nova.db)                  │
-              │  shipments · documents · runs                    │
-              │  extracted_fields · validations · decisions      │
-              │  agent_spans ← one row per LLM call: tokens,     │
-              │                usd, latency, retries, status     │
-              └────────┬───────────────────────────┬─────────────┘
-              FastAPI + SSE                 NL→SQL (mode=ro)
-                       ▼                           ▼
-              React operator UI          "how many were flagged?"
+                    ┌────── LangGraph state machine ──────┐
+   PDF / image ─────┼─ ingest ─ extract ─ validate ─ route┼─▶ done
+                    └────┬────────┬─────────┬────────┬────┘
+                         │  checkpoint saved after each step
+        ┌────────────────▼────────▼─────────▼────────▼──────────┐
+        │  SQLite: shipments · documents · runs                 │
+        │          extracted_fields · validations · decisions   │
+        │          agent_spans ← one row per model call:        │
+        │                       tokens, cost, time, retries     │
+        └──────────┬──────────────────────────┬─────────────────┘
+              FastAPI + SSE            plain English → SQL (read-only)
+                   ▼                          ▼
+          React operator screen     "how many were flagged?"
 
-  inside `extract`:
-     200 DPI render ──▶ vision LLM ──▶ raw reading ─┐
-     text layer / OCR ──────────────▶ corpus ───────┼─▶ grounding
-     weak fields ──▶ 300 DPI + deskew ──▶ re-read ──┘   quote? format?
-                                                        digits? trust?
+   inside `extract`:  200 DPI ─▶ vision model ─▶ what it said ─┐
+                      text layer / OCR ─▶ our own copy ────────┼▶ checks
+                      weak fields ─▶ 300 DPI ─▶ ask again ─────┘
 ```
 
-**Where state lives.** Three stores. The LangGraph checkpointer makes the *graph*
-resumable at node boundaries; the application tables make the *result* queryable,
-written by each node before the next begins; the reading cache memoises the vision call
-on `(document bytes, model)`. The third exists because of a measured failure: LangGraph
-checkpoints a node only when it *returns*, so a crash *inside* `extract` re-ran it —
-two `extract_pass1` spans, double cost. With the cache, crash-and-resume costs
-**$0.01063** against **$0.01064** uninterrupted.
+**Where state lives.** Three places. The LangGraph checkpoint file lets the
+pipeline restart from the last finished step. The application tables hold the
+results so they can be queried. The reading cache remembers what the vision
+model said for a given document and model.
+
+The third exists because of something we measured. LangGraph only saves a
+step's output when the step *finishes*, so a crash *inside* extraction re-runs
+the whole step. We saw it: two extraction calls, double cost, one document.
+With the cache, a crash and restart costs **$0.01063** against **$0.01064**.
 
 ---
 
-## Three failure modes, all observed
+## Three failure modes we actually hit
 
-**1 · Right text, wrong box — the one grounding cannot catch.** The extractor returned
-`AMSTERDAM, NETHERLANDS` for Port of Discharge at 0.85, fully grounded. Not a
-hallucination: that text is genuinely on the page, in the *Place of Delivery* box. Every
-text check passes and always will — the quote exists, the format is valid, the value is
-locatable. Grounding answers "is this text on the page?", never "is it in the *right*
-box?" The Validator caught it via the customer rule. Note the second-order harm: had it
-been the only problem, the amendment email would have told the supplier to fix a port
-**already correct on their document**.
+**1 · The right text from the wrong box.** The extractor reported
+`AMSTERDAM, NETHERLANDS` as the Port of Discharge, at 0.85 confidence, and it
+passed every check. It was not making it up: Amsterdam really is printed on
+that page, in the *Place of Delivery* box. Every text check passes and always
+will, because our checks answer "is this text on the page?" and can never
+answer "is it in the *right* box?" Only the customer rule caught it. Note the
+knock-on effect: had that been the only problem, the amendment email would have
+told the supplier to fix a port that was already correct.
 
-*A fix that failed.* I added `source_label`, asking which caption each value came from.
-It reported `"PORT OF DISCHARGE"` — the caption it was *looking for*, not the box it
-read from, despite an explicit instruction. It also false-positived on a clean document
-(Incoterms legitimately live inside the goods-description box on a JSE B/L), costing two
-auto-approvals. Now scoped to fields with a dedicated box. What catches it today is
-two-pass disagreement; what would catch it properly is geometric provenance — PyMuPDF
-gives word coordinates, RapidOCR gives boxes.
+*A fix that did not work.* I asked the model which box caption each value came
+from. It answered `"PORT OF DISCHARGE"` — the caption it was *looking for*, not
+the box it read. It also flagged a correct value on a clean document, where
+Incoterms legitimately sit inside the goods description box, costing two
+approvals. What catches it today is the two readings disagreeing; what would
+fix it properly is matching values to labels by position, since PyMuPDF gives
+word coordinates and RapidOCR gives boxes.
 
-**2 · Fuzzy matching launders near-miss errors.** One root cause, four incidents. Fuzzy
-similarity absorbs OCR noise, and absorbs real errors just as happily, because a
-one-character error and scanner noise are indistinguishable to edit distance.
+**2 · Fuzzy matching hides near-miss errors.** Fuzzy matching exists to cope
+with scanner noise, and it copes with real errors just as happily, because a
+one-character mistake and scanner noise look identical to it.
 
-| Extracted | Page says | Similarity | Before |
+| What the model said | What the page says | Similarity | Before the fix |
 |---|---|---|---|
-| `2026-08841` | `INV-2026-08841` | 1.00 | approved — a truncation *is* a substring |
+| `2026-08841` | `INV-2026-08841` | 1.00 | approved — a shortened value is part of the full one |
 | `12,960 KGS` | `12,980 KGS` | ~0.9 | approved |
 | `SHANGHAI (CHSHA)` | `(CNSHA)` | ~0.96 | approved |
-| `Acne Electronics…` | `Acme…` | ~0.97 | approved, **and matched the rule** |
+| `Acne Electronics…` | `Acme…` | ~0.97 | approved, **and it matched the rule** |
 
-Fixes: **token alignment** (an identifier must equal a whole token on the page); **exact
-digit checks** (every 3+ digit run must appear verbatim — numbers get exactness, not
-fuzziness); **snap-to-source** (the model locates a value, the document decides how it
-reads, guarded so it can only move *toward* the page, so a genuine supplier typo still
-fails its rule); and **OCR trust 0.92 → 0.80**, since verification is only as good as
-the corpus behind it. Before: 3 wrong values auto-approved on the degraded scan. After:
-**0 escaped errors**, auto-approve accuracy 100% (16/16).
+Four fixes: reference numbers must match a **complete token** on the page;
+runs of three or more **digits must appear exactly**; **snapping to the page**,
+where the model finds the value and the document decides the spelling, which
+can only move a value closer to what is printed so a real supplier typo still
+fails its rule; and **OCR trust dropped 0.92 → 0.80**, because a check is only
+as good as the copy of the page behind it. Before: 3 wrong values approved on
+the poor scan. After: **0 escaped errors**, everything approved correct (16/16).
 
-**3 · Substring matches inside unrelated words.** The Incoterm check found `CIF` in the
-page text — inside the word **SPECIFICALLY**, in liability boilerplate, on a document
-with no Incoterm at all. The most dangerous shape of hallucination here, because the
-"evidence" is real text from the real page, so naive substring grounding rubber-stamps
-it. Fixed with word-boundary matching for short enum codes. That document is now a
-permanent fixture: the only correct extraction for its Incoterm is `not_found`.
+**3 · Short codes matching inside longer words.** The Incoterm check looked for
+`CIF` and found it — inside the word **SPECIFICALLY**, on a document with no
+Incoterm at all. The most dangerous kind of made-up answer here, because the
+"evidence" is real text from the real page. Fixed by matching whole words only
+for short codes. That document is now a permanent test case.
 
 ---
 
-## Observability
+## Tracing one shipment
 
-Every LLM call writes an `agent_spans` row (`run_id, node, name, model, tokens, usd,
-latency_ms, attempts, status, error`); every stage writes under the same `run_id`.
-Tracing one shipment across 50 customers is one join:
+Every model call writes a row to `agent_spans`: run id, step, call name, model,
+tokens, cost, time, retries, status, error. Every stage writes under the same
+run id, so tracing one shipment across 50 customers is one join:
 
 ```sql
 SELECT s.node, s.name, s.model, s.latency_ms, s.usd, s.status
@@ -92,77 +90,77 @@ SELECT s.node, s.name, s.model, s.latency_ms, s.usd, s.status
  WHERE r.shipment_id = 'SHP-2287' ORDER BY s.id;
 ```
 
-`runs.stage` records the last completed node, so a failed run says where it died and
-`runs.error` says why. Cost is summed from spans, not an in-process counter — a resumed
-run reported $0.00101 against an actual $0.01064 before that fix, because the in-memory
-budget resets on resume while spans survive.
+`runs.stage` holds the last step that finished, so a failed run says where it
+died. Cost is added from those rows, not a counter in memory — a restarted run
+reported $0.00101 against a real $0.01064, because the in-memory total resets
+while the rows survive.
 
-**Dashboard, in priority order:** escaped-error rate per customer (the only metric that
-can hurt a customer, and the one that should page someone); touchless and uncertain
-rates trended per customer, since a spike in uncertainty usually means a supplier
-changed their template — actionable within a day and invisible in an accuracy average;
-cost per document by model and node; p50/p95 latency by node. Missing for production:
-OpenTelemetry so traces span services rather than one SQLite file, and Langfuse for
-prompt-level replay — spans record that a call happened and what it cost, not the exact
-prompt.
+**A dashboard, in priority order.** Escaped error rate per customer: approvals
+a human later overturned, the only number that can hurt a customer. Then
+touchless and uncertain rates per customer over time, because a jump in
+uncertainty usually means a supplier changed their form — fixable in a day, and
+invisible in an accuracy average. Then cost per document by model and step, and
+50th/95th percentile time per step. Missing for production: OpenTelemetry, so a
+trace spans several services rather than one SQLite file, and Langfuse for
+replaying prompts.
 
 ---
 
-## Cost and latency
+## Cost and speed
 
-| Stage | Calls/doc | Avg cost | Share | Latency |
+| Step | Calls per doc | Average cost | Share | Time |
 |---|---|---|---|---|
 | Extract | 1–2 | $0.0098 | **90%** | 7–13 s |
 | Route | 1–2 | $0.0004 | 8% | 2–5 s |
 | Validate | 0–1 | $0.0002 | 2% | 0–2.4 s |
-| OCR (scans only) | — | free | — | **~30 s/page** |
+| OCR (scans only) | — | free | — | **~30 s per page** |
 
-Clean document **$0.0106** / 8–12 s; degraded scan **$0.0202** / 28 s. At 1,000 docs/day
-that is ~$11–20/day, well under the headcount it offsets.
+A clean document costs **$0.0106** and takes 8–12 s; the poor scan costs
+**$0.0202** and takes 28 s. At 1,000 documents a day that is $11–20 a day, well
+below the salary cost it offsets.
 
-**Where cost blows up:** page count, not document count — cost is linear in page images,
-and B/Ls run 1–3 pages while contracts run 40. A systematically bad scanner at one
-supplier also sends every field to a second pass, silently doubling that customer's
-bill. **Controls:** `MAX_USD_PER_DOCUMENT` ($0.25) and `MAX_LLM_CALLS_PER_RUN` (12)
-checked *before* each call, raising rather than degrading, with every call routed
-through one choke point so they are enforceable; escalation is per-field, so a clean
-page costs one call; retries capped at 3, transient only. The next lever is routing by
-difficulty — cheap model first, escalate on weak grounding, likely ~5× cheaper on clean
-documents but needing a bigger golden set to prove.
+**Where cost would blow up:** page count, not document count — a Bill of Lading
+is 1–3 pages, a contract is 40. And one supplier with a bad scanner sends every
+field to a second reading, quietly doubling that customer's bill. Holding it
+down: `MAX_USD_PER_DOCUMENT` ($0.25) and `MAX_LLM_CALLS_PER_RUN` (12) are
+checked before every call and stop the run rather than cutting corners; every
+call goes through one place in the code, so those limits are enforceable; and
+escalation is per field, so a clean page costs exactly one call. The next thing
+to try is choosing the model by difficulty, probably ~5× cheaper on clean
+documents, but that needs a bigger golden set first.
 
-**The slowest hop is OCR, and it is not on the critical path — but it runs as if it
-were.** OCR produces the grounding corpus, needed only *after* extraction returns, yet
-it runs first, serially, in preprocessing. Running it concurrently with the vision call
-removes ~30 s from every scanned document for the cost of a thread. That is the
-highest-value latency fix and **it is not done**. After that, the Router's two calls are
-independent and could be concurrent (~2 s). None of it is urgent for the CG workflow —
-the human baseline is a 4–24 hour email cycle — so it matters for throughput at volume,
-not perceived responsiveness.
+**The slowest step is OCR, and it is not on the critical path — but it runs as
+if it were.** OCR produces our copy of the page text, which is only needed
+*after* extraction returns, yet it runs first during preprocessing. Running it
+alongside the vision call would save ~30 s on every scanned document for the
+price of one thread. That is the biggest speed win available and **it is not
+done**.
 
 ---
 
 ## What I would do differently with a week
 
-**Geometric provenance** to close failure mode 1 properly rather than trusting
-self-report. **A real golden set** — 100+ documents across several templates; 24
-readings finds the bugs above and is nowhere near enough to claim calibration, and it
-gates every other optimisation. **Model routing by difficulty.** **OCR off the critical
-path.**
+**Match values to labels by position**, closing failure mode 1 properly.
+**Build a proper golden set** of 100+ documents across several carrier forms —
+24 readings finds the bugs above and is nowhere near enough to claim the
+confidence scores are calibrated, and it blocks every other improvement.
+**Choose the model by difficulty.** **Move OCR off the critical path.**
 
-Three structural changes, having built it once:
+Three structural things I would change, having built it once:
 
-- **Cache the raw reading, never the verified result.** I got this wrong first time:
-  caching the finished output made every grounding improvement invisible on documents
-  already seen — *including in production* — so tightening a rule silently did nothing
-  for exactly the documents most likely to be reprocessed. Reading is expensive and
-  immutable; verification is cheap and changes often.
-- **Separate "is the value real" from "is the citation tidy" at the schema level.** I
-  conflated them twice; both times correct fields were marked uncertain, spending human
-  attention on nothing.
-- **Version the rule set per decision.** Rules change underneath stored outcomes; a
-  dispute six months later needs the rules *as they were*.
+- **Cache what the model said, never what you concluded.** I got this wrong
+  first time. Caching the finished result made every improvement to our
+  checking invisible on documents already seen — *including in production* — so
+  tightening a rule quietly did nothing for exactly the documents most likely
+  to be reprocessed.
+- **Keep "is the value real" separate from "is the quote tidy".** I mixed those
+  up twice, and both times correct fields were marked uncertain, so a human
+  spent attention on nothing.
+- **Record the rule version with each decision.** Rules change underneath
+  stored results, and a dispute needs the rules as they were.
 
-**And not more prompt engineering.** Every durable improvement came from deterministic
-verification around the model, not better instructions to it. Both prompt-level fixes
-that appeared to work either regressed at a different render resolution or were ignored
-outright. The model is good at reading pixels; the code should decide what to believe.
+**And not more prompt tuning.** Every lasting improvement came from
+deterministic checks around the model, not better instructions to it. Both
+prompt fixes that appeared to work either broke at a different image resolution
+or were ignored. The model is good at reading pixels. The code should decide
+what to believe.
