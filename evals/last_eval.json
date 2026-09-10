@@ -228,7 +228,7 @@
     "truth": "Acme Electronics Mfg Pte",
     "got": "Acme Electronics Mfg Pte",
     "verdict": "uncertain",
-    "confidence": 0.777,
+    "confidence": 0.784,
     "source_label": "CONSIGNEE (NOT NEGOTIABLE UNLESS CONSIGNED TO ORDER)",
     "correct": true,
     "auto_approved": false,
@@ -244,7 +244,7 @@
     "truth": "8542.39",
     "got": "8542.39",
     "verdict": "uncertain",
-    "confidence": 0.157,
+    "confidence": 0.171,
     "source_label": "DESCRIPTION OF PACKAGE AND GOODS",
     "correct": true,
     "auto_approved": false,
@@ -252,7 +252,7 @@
       "token_alignment_unverified",
       "digits_not_on_page:8542.39",
       "weak_grounding",
-      "reextraction_disagreement"
+      "confirmed_by_reextraction"
     ]
   },
   {
@@ -260,15 +260,15 @@
     "quality": "degraded",
     "field": "port_of_loading",
     "truth": "SHANGHAI (CNSHA)",
-    "got": "SHANGHAI (CHSHA)",
+    "got": "SHANGHAI (CNSHA)",
     "verdict": "uncertain",
-    "confidence": 0.45,
+    "confidence": 0.777,
     "source_label": "PORT OF LOADING",
-    "correct": false,
+    "correct": true,
     "auto_approved": false,
     "flags": [
       "evidence_citation_not_verbatim",
-      "reextraction_disagreement"
+      "confirmed_by_reextraction"
     ]
   },
   {
@@ -278,7 +278,7 @@
     "truth": "ROTTERDAM (NLRTM)",
     "got": "AMSTERDAM, NETHERLANDS",
     "verdict": "uncertain",
-    "confidence": 0.777,
+    "confidence": 0.768,
     "source_label": "PORT OF DISCHARGE",
     "correct": false,
     "auto_approved": false,
@@ -294,7 +294,7 @@
     "truth": null,
     "got": null,
     "verdict": "not_found",
-    "confidence": 0.9,
+    "confidence": 0.4,
     "source_label": null,
     "correct": true,
     "auto_approved": false,
@@ -307,17 +307,16 @@
     "quality": "degraded",
     "field": "description_of_goods",
     "truth": "ELECTRONIC INTEGRATED CIRCUITS - MEMORY MODULES",
-    "got": "512 CARTONS ELECTRONIC INTEGRATED CIRCUITS MEMORY MODULES",
+    "got": "MEMORY MODULES",
     "verdict": "uncertain",
-    "confidence": 0.155,
+    "confidence": 0.149,
     "source_label": "DESCRIPTION OF PACKAGE AND GOODS",
     "correct": true,
     "auto_approved": false,
     "flags": [
-      "evidence_citation_not_verbatim",
       "value_absent_from_document",
       "possible_hallucination",
-      "confirmed_by_reextraction"
+      "reextraction_disagreement"
     ]
   },
   {
@@ -327,13 +326,12 @@
     "truth": "12980 KGS",
     "got": "12,960 KGS",
     "verdict": "uncertain",
-    "confidence": 0.141,
+    "confidence": 0.157,
     "source_label": "GROSS",
     "correct": false,
     "auto_approved": false,
     "flags": [
       "digits_not_on_page:12,960",
-      "evidence_citation_not_verbatim",
       "weak_grounding",
       "reextraction_disagreement"
     ]
@@ -345,7 +343,7 @@
     "truth": "INV-2026-08847",
     "got": "INV-2026-08847",
     "verdict": "found",
-    "confidence": 0.862,
+    "confidence": 0.854,
     "source_label": "EXPORT REFERENCES",
     "correct": true,
     "auto_approved": true,
