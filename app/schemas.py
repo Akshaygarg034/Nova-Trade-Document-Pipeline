@@ -59,6 +59,13 @@ class ExtractedField(BaseModel):
         description="Verbatim text copied from the document containing this value. Null if not_found."
     )
     evidence_page: Optional[int] = Field(description="1-indexed page the quote came from. Null if not_found.")
+    source_label: Optional[str] = Field(
+        description=(
+            "The printed caption of the box this value was read from, copied "
+            "verbatim, e.g. 'PORT OF DISCHARGE'. Null if the value is not in "
+            "a labelled box."
+        )
+    )
     reasoning: str = Field(description="One short sentence on how this was identified.")
 
 
@@ -100,6 +107,7 @@ class GroundedField(BaseModel):
 
     evidence_quote: Optional[str] = None
     evidence_page: Optional[int] = None
+    source_label: Optional[str] = None
     reasoning: str = ""
     flags: list[str] = Field(default_factory=list, description="Machine-readable audit trail.")
 

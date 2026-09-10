@@ -12,13 +12,13 @@ import argparse
 import json
 import sys
 
-from app.agents.extractor import extract
+from app.agents.extractor import extract_cached
 from app.agents.router import route
 from app.agents.validator import validate
 from app.config import settings
 from app.llm import RunBudget
 from app.preprocess import load_document
-from app.schemas import ExtractionOutput, MatchStatus, Verdict
+from app.schemas import MatchStatus, Verdict
 
 VMARK = {
     MatchStatus.MATCH: "OK  ",
@@ -30,17 +30,14 @@ EMARK = {Verdict.FOUND: "OK ", Verdict.UNCERTAIN: "?? ", Verdict.NOT_FOUND: "-- 
 
 
 def cached_extract(path: str, model: str | None, budget: RunBudget, fresh: bool):
+    """Reading is memoised inside the extractor; verification always re-runs."""
     bundle = load_document(path)
-    model = model or settings.extractor_model
-    cache = settings.data_dir / "extract_cache" / f"{bundle.doc_id}.{model}.json"
-    cache.parent.mkdir(parents=True, exist_ok=True)
-
-    if cache.exists() and not fresh:
-        print(f"(using cached extraction: {cache.name})")
-        return ExtractionOutput(**json.loads(cache.read_text(encoding="utf-8")))
-
-    out = extract(bundle, model=model, budget=budget)
-    cache.write_text(out.model_dump_json(indent=2), encoding="utf-8")
+    if fresh:
+        for f in (settings.data_dir / "reading_cache").glob(f"{bundle.doc_id}.*"):
+            f.unlink()
+    out, was_cached = extract_cached(bundle, model=model, budget=budget)
+    if was_cached:
+        print("(vision call served from cache; verification re-ran)")
     return out
 
 

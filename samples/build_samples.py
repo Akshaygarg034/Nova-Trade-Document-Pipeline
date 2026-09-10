@@ -209,12 +209,20 @@ def main() -> None:
     degrade(built["SHP-2287"], "SHP-2287")
 
     labels = {
-        sid: {"doc_type": s["doc_type"], "template": s["template"], "fields": s["truth"]}
+        sid: {
+            "path": f"samples/clean/{sid}_BOL.pdf",
+            "doc_type": s["doc_type"],
+            "template": s["template"],
+            "quality": "clean",
+            "fields": s["truth"],
+        }
         for sid, s in SHIPMENTS.items()
     }
     labels["SHP-2287-scan"] = {
+        "path": "samples/messy/SHP-2287_BOL_scan.jpg",
         "doc_type": "BILL_OF_LADING",
         "template": "dhx-degraded",
+        "quality": "degraded",
         "fields": SHIPMENTS["SHP-2287"]["truth"],
     }
     lp = ROOT.parent / "evals" / "golden" / "labels.json"

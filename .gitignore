@@ -5,6 +5,7 @@ __pycache__/
 data/*.db
 data/*.sqlite*
 data/extract_cache/
+data/reading_cache/
 data/renders/
 data/ui-shots/
 data/uploads/

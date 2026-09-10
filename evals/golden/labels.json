@@ -1,7 +1,9 @@
 {
   "SHP-1042": {
+    "path": "samples/clean/SHP-1042_BOL.pdf",
     "doc_type": "BILL_OF_LADING",
     "template": "jse",
+    "quality": "clean",
     "fields": {
       "consignee_name": "Acme Electronics Manufacturing Pte Ltd",
       "hs_code": "8542.31",
@@ -14,8 +16,10 @@
     }
   },
   "SHP-2287": {
+    "path": "samples/clean/SHP-2287_BOL.pdf",
     "doc_type": "BILL_OF_LADING",
     "template": "dhx",
+    "quality": "clean",
     "fields": {
       "consignee_name": "Acme Electronics Mfg Pte",
       "hs_code": "8542.39",
@@ -28,8 +32,10 @@
     }
   },
   "SHP-2287-scan": {
+    "path": "samples/messy/SHP-2287_BOL_scan.jpg",
     "doc_type": "BILL_OF_LADING",
     "template": "dhx-degraded",
+    "quality": "degraded",
     "fields": {
       "consignee_name": "Acme Electronics Mfg Pte",
       "hs_code": "8542.39",

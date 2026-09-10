@@ -1,0 +1,357 @@
+[
+  {
+    "doc": "SHP-1042",
+    "quality": "clean",
+    "field": "consignee_name",
+    "truth": "Acme Electronics Manufacturing Pte Ltd",
+    "got": "Acme Electronics Manufacturing Pte Ltd",
+    "verdict": "found",
+    "confidence": 0.99,
+    "source_label": "Consignee",
+    "correct": true,
+    "auto_approved": true,
+    "flags": []
+  },
+  {
+    "doc": "SHP-1042",
+    "quality": "clean",
+    "field": "hs_code",
+    "truth": "8542.31",
+    "got": "8542.31",
+    "verdict": "found",
+    "confidence": 0.98,
+    "source_label": "Kind of Packages or Units; Description of Goods",
+    "correct": true,
+    "auto_approved": true,
+    "flags": []
+  },
+  {
+    "doc": "SHP-1042",
+    "quality": "clean",
+    "field": "port_of_loading",
+    "truth": "SINGAPORE (SGSIN)",
+    "got": "SINGAPORE (SGSIN)",
+    "verdict": "found",
+    "confidence": 0.99,
+    "source_label": "Port of Loading",
+    "correct": true,
+    "auto_approved": true,
+    "flags": []
+  },
+  {
+    "doc": "SHP-1042",
+    "quality": "clean",
+    "field": "port_of_discharge",
+    "truth": "ROTTERDAM (NLRTM)",
+    "got": "ROTTERDAM (NLRTM)",
+    "verdict": "found",
+    "confidence": 0.99,
+    "source_label": "Port of Discharge",
+    "correct": true,
+    "auto_approved": true,
+    "flags": []
+  },
+  {
+    "doc": "SHP-1042",
+    "quality": "clean",
+    "field": "incoterms",
+    "truth": "FOB",
+    "got": "FOB",
+    "verdict": "found",
+    "confidence": 0.96,
+    "source_label": "Kind of Packages or Units; Description of Goods",
+    "correct": true,
+    "auto_approved": true,
+    "flags": []
+  },
+  {
+    "doc": "SHP-1042",
+    "quality": "clean",
+    "field": "description_of_goods",
+    "truth": "ELECTRONIC INTEGRATED CIRCUITS - PROCESSORS AND CONTROLLERS",
+    "got": "ELECTRONIC INTEGRATED CIRCUITS PROCESSORS AND CONTROLLERS",
+    "verdict": "uncertain",
+    "confidence": 0.45,
+    "source_label": "Kind of Packages or Units; Description of Goods",
+    "correct": true,
+    "auto_approved": false,
+    "flags": [
+      "reextraction_disagreement"
+    ]
+  },
+  {
+    "doc": "SHP-1042",
+    "quality": "clean",
+    "field": "gross_weight",
+    "truth": "12450.00 KGS",
+    "got": "12,450.00 KGS",
+    "verdict": "found",
+    "confidence": 0.99,
+    "source_label": "Gross Weight",
+    "correct": true,
+    "auto_approved": true,
+    "flags": []
+  },
+  {
+    "doc": "SHP-1042",
+    "quality": "clean",
+    "field": "invoice_number",
+    "truth": "INV-2026-08841",
+    "got": "INV-2026-08841",
+    "verdict": "found",
+    "confidence": 0.97,
+    "source_label": "Marks / Numbers",
+    "correct": true,
+    "auto_approved": true,
+    "flags": [
+      "snapped_to_source:INV.2026-08841"
+    ]
+  },
+  {
+    "doc": "SHP-2287",
+    "quality": "clean",
+    "field": "consignee_name",
+    "truth": "Acme Electronics Mfg Pte",
+    "got": "Acme Electronics Mfg Pte",
+    "verdict": "found",
+    "confidence": 0.99,
+    "source_label": "CONSIGNEE (NOT NEGOTIABLE UNLESS CONSIGNED TO ORDER)",
+    "correct": true,
+    "auto_approved": true,
+    "flags": []
+  },
+  {
+    "doc": "SHP-2287",
+    "quality": "clean",
+    "field": "hs_code",
+    "truth": "8542.39",
+    "got": "8542.39",
+    "verdict": "found",
+    "confidence": 0.98,
+    "source_label": "DESCRIPTION OF PACKAGE AND GOODS",
+    "correct": true,
+    "auto_approved": true,
+    "flags": []
+  },
+  {
+    "doc": "SHP-2287",
+    "quality": "clean",
+    "field": "port_of_loading",
+    "truth": "SHANGHAI (CNSHA)",
+    "got": "SHANGHAI (CNSHA)",
+    "verdict": "found",
+    "confidence": 0.882,
+    "source_label": "PORT OF LOADING",
+    "correct": true,
+    "auto_approved": true,
+    "flags": [
+      "evidence_citation_not_verbatim"
+    ]
+  },
+  {
+    "doc": "SHP-2287",
+    "quality": "clean",
+    "field": "port_of_discharge",
+    "truth": "ROTTERDAM (NLRTM)",
+    "got": "ROTTERDAM (NLRTM)",
+    "verdict": "found",
+    "confidence": 0.882,
+    "source_label": "PORT OF DISCHARGE",
+    "correct": true,
+    "auto_approved": true,
+    "flags": [
+      "evidence_citation_not_verbatim"
+    ]
+  },
+  {
+    "doc": "SHP-2287",
+    "quality": "clean",
+    "field": "incoterms",
+    "truth": null,
+    "got": null,
+    "verdict": "not_found",
+    "confidence": 0.95,
+    "source_label": null,
+    "correct": true,
+    "auto_approved": false,
+    "flags": [
+      "reported_absent"
+    ]
+  },
+  {
+    "doc": "SHP-2287",
+    "quality": "clean",
+    "field": "description_of_goods",
+    "truth": "ELECTRONIC INTEGRATED CIRCUITS - MEMORY MODULES",
+    "got": "512 CARTONS ELECTRONIC INTEGRATED CIRCUITS",
+    "verdict": "found",
+    "confidence": 0.98,
+    "source_label": "DESCRIPTION OF PACKAGE AND GOODS",
+    "correct": true,
+    "auto_approved": true,
+    "flags": []
+  },
+  {
+    "doc": "SHP-2287",
+    "quality": "clean",
+    "field": "gross_weight",
+    "truth": "12980 KGS",
+    "got": "12,980 KGS",
+    "verdict": "found",
+    "confidence": 0.891,
+    "source_label": "GROSS WEIGHT",
+    "correct": true,
+    "auto_approved": true,
+    "flags": [
+      "evidence_citation_not_verbatim"
+    ]
+  },
+  {
+    "doc": "SHP-2287",
+    "quality": "clean",
+    "field": "invoice_number",
+    "truth": "INV-2026-08847",
+    "got": "INV-2026-08847",
+    "verdict": "found",
+    "confidence": 0.891,
+    "source_label": "EXPORT REFERENCES",
+    "correct": true,
+    "auto_approved": true,
+    "flags": [
+      "evidence_citation_not_verbatim"
+    ]
+  },
+  {
+    "doc": "SHP-2287-scan",
+    "quality": "degraded",
+    "field": "consignee_name",
+    "truth": "Acme Electronics Mfg Pte",
+    "got": "Acme Electronics Mfg Pte",
+    "verdict": "uncertain",
+    "confidence": 0.777,
+    "source_label": "CONSIGNEE (NOT NEGOTIABLE UNLESS CONSIGNED TO ORDER)",
+    "correct": true,
+    "auto_approved": false,
+    "flags": [
+      "evidence_citation_not_verbatim",
+      "confirmed_by_reextraction"
+    ]
+  },
+  {
+    "doc": "SHP-2287-scan",
+    "quality": "degraded",
+    "field": "hs_code",
+    "truth": "8542.39",
+    "got": "8542.39",
+    "verdict": "uncertain",
+    "confidence": 0.157,
+    "source_label": "DESCRIPTION OF PACKAGE AND GOODS",
+    "correct": true,
+    "auto_approved": false,
+    "flags": [
+      "token_alignment_unverified",
+      "digits_not_on_page:8542.39",
+      "weak_grounding",
+      "reextraction_disagreement"
+    ]
+  },
+  {
+    "doc": "SHP-2287-scan",
+    "quality": "degraded",
+    "field": "port_of_loading",
+    "truth": "SHANGHAI (CNSHA)",
+    "got": "SHANGHAI (CHSHA)",
+    "verdict": "uncertain",
+    "confidence": 0.45,
+    "source_label": "PORT OF LOADING",
+    "correct": false,
+    "auto_approved": false,
+    "flags": [
+      "evidence_citation_not_verbatim",
+      "reextraction_disagreement"
+    ]
+  },
+  {
+    "doc": "SHP-2287-scan",
+    "quality": "degraded",
+    "field": "port_of_discharge",
+    "truth": "ROTTERDAM (NLRTM)",
+    "got": "AMSTERDAM, NETHERLANDS",
+    "verdict": "uncertain",
+    "confidence": 0.777,
+    "source_label": "PORT OF DISCHARGE",
+    "correct": false,
+    "auto_approved": false,
+    "flags": [
+      "evidence_citation_not_verbatim",
+      "confirmed_by_reextraction"
+    ]
+  },
+  {
+    "doc": "SHP-2287-scan",
+    "quality": "degraded",
+    "field": "incoterms",
+    "truth": null,
+    "got": null,
+    "verdict": "not_found",
+    "confidence": 0.9,
+    "source_label": null,
+    "correct": true,
+    "auto_approved": false,
+    "flags": [
+      "reported_absent"
+    ]
+  },
+  {
+    "doc": "SHP-2287-scan",
+    "quality": "degraded",
+    "field": "description_of_goods",
+    "truth": "ELECTRONIC INTEGRATED CIRCUITS - MEMORY MODULES",
+    "got": "512 CARTONS ELECTRONIC INTEGRATED CIRCUITS MEMORY MODULES",
+    "verdict": "uncertain",
+    "confidence": 0.155,
+    "source_label": "DESCRIPTION OF PACKAGE AND GOODS",
+    "correct": true,
+    "auto_approved": false,
+    "flags": [
+      "evidence_citation_not_verbatim",
+      "value_absent_from_document",
+      "possible_hallucination",
+      "confirmed_by_reextraction"
+    ]
+  },
+  {
+    "doc": "SHP-2287-scan",
+    "quality": "degraded",
+    "field": "gross_weight",
+    "truth": "12980 KGS",
+    "got": "12,960 KGS",
+    "verdict": "uncertain",
+    "confidence": 0.141,
+    "source_label": "GROSS",
+    "correct": false,
+    "auto_approved": false,
+    "flags": [
+      "digits_not_on_page:12,960",
+      "evidence_citation_not_verbatim",
+      "weak_grounding",
+      "reextraction_disagreement"
+    ]
+  },
+  {
+    "doc": "SHP-2287-scan",
+    "quality": "degraded",
+    "field": "invoice_number",
+    "truth": "INV-2026-08847",
+    "got": "INV-2026-08847",
+    "verdict": "found",
+    "confidence": 0.862,
+    "source_label": "EXPORT REFERENCES",
+    "correct": true,
+    "auto_approved": true,
+    "flags": [
+      "token_alignment_unverified",
+      "confirmed_by_reextraction"
+    ]
+  }
+]

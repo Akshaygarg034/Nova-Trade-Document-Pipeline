@@ -66,6 +66,40 @@ _SUBTOKEN_RE = re.compile(r"\d[\d.,]*\d|\d")
 
 WEIGHT_UNITS = r"(KG|KGS|KGM|LB|LBS|MT|TON|TONNE)"
 
+# Words that must appear in the printed caption of the box a value came from.
+#
+# This catches the one error class that text grounding structurally cannot:
+# right text, wrong box. On our degraded scan the extractor returned
+# "AMSTERDAM, NETHERLANDS" for Port of Discharge, read out of the "PLACE OF
+# DELIVERY BY ON CARRIER" field. The text is genuinely on the page, so every
+# quote check passed and it auto-approved at 0.85 -- and the amendment email
+# would then have told the supplier to correct a port that was already right.
+#
+# ONLY fields that occupy a dedicated box on every trade form. HS code,
+# Incoterms and invoice number are deliberately absent: they legitimately
+# live inside free-text boxes. Our clean B/L carries "FREIGHT TERMS: FOB
+# SINGAPORE" inside "Kind of Packages or Units; Description of Goods", and
+# an earlier version of this list penalised that correct reading, costing
+# two auto-approvals on a document with nothing wrong with it.
+#
+# Deliberately permissive: forms word captions differently, and a caption we
+# fail to anticipate should cost confidence, never silently drop a value.
+FIELD_LABEL_KEYWORDS: dict[str, tuple[str, ...]] = {
+    "consignee_name": ("CONSIGNEE", "CONSIGNED"),
+    "port_of_loading": ("LOADING", "LOAD PORT", "POL", "PORT OF SHIPMENT", "ORIGIN"),
+    "port_of_discharge": ("DISCHARGE", "POD", "DESTINATION PORT", "PORT OF ARRIVAL"),
+    "gross_weight": ("GROSS", "WEIGHT"),
+}
+
+
+def label_matches_field(name: str, source_label: Optional[str]) -> Optional[bool]:
+    """Does the box caption match the field we asked for? None = cannot tell."""
+    keywords = FIELD_LABEL_KEYWORDS.get(name)
+    if not keywords or not source_label or not source_label.strip():
+        return None
+    caption = source_label.upper()
+    return any(k in caption for k in keywords)
+
 
 def norm(s: str) -> str:
     """Uppercase, alphanumerics only. Collapses OCR spacing and punctuation noise."""
@@ -395,6 +429,12 @@ def ground_field(
     if fmt_valid is False:
         flags = flags + ["format_invalid"]
 
+    # Provenance: was this value read out of the right box on the form?
+    label_ok = label_matches_field(name, raw.source_label)
+    if label_ok is False:
+        flags = flags + [f"wrong_source_field:{raw.source_label}"]
+        grounded = False
+
     trust = SOURCE_TRUST.get(text_source, 0.6)
     if text_source == "none":
         flags = flags + ["unverifiable_no_corpus"]
@@ -404,6 +444,7 @@ def ground_field(
         * grounding_factor(score, grounded)
         * (0.40 if fmt_valid is False else 1.0)
         * (0.90 if "evidence_citation_not_verbatim" in flags else 1.0)
+        * (0.35 if label_ok is False else 1.0)
         * trust
     )
 
@@ -432,6 +473,7 @@ def ground_field(
         format_note=fmt_note,
         evidence_quote=raw.evidence_quote,
         evidence_page=raw.evidence_page,
+        source_label=raw.source_label,
         reasoning=raw.reasoning or "",
         flags=flags,
     )

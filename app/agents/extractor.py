@@ -17,6 +17,7 @@ Two design decisions worth stating plainly:
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import pathlib
 import time
@@ -39,6 +40,10 @@ from app.schemas import (
 )
 
 MAX_PAGES_PER_CALL = 4
+
+# Bump when the extraction schema or prompt changes, so cached results from
+# an older contract are not silently reused.
+SCHEMA_VERSION = "v2-source-label"
 
 INSTRUCTIONS = """You extract structured data from international trade documents \
 (Bills of Lading, Commercial Invoices, Packing Lists, Certificates of Origin).
@@ -69,12 +74,22 @@ Return the eight requested fields. For each one:
    is checked against the document independently. A quote you invented, or
    assembled from separated parts of the page, will be detected.
 
-5. REPORT IDENTIFIERS COMPLETE. Reference numbers include their alphabetic
+5. NAME THE BOX YOU READ IT FROM. `source_label` is the printed caption of
+   the field on the form, copied verbatim -- "PORT OF DISCHARGE",
+   "CONSIGNEE (NOT NEGOTIABLE UNLESS CONSIGNED TO ORDER)", "GROSS WEIGHT".
+   Report the caption of the box the value actually sits in, even if you
+   believe the shipper filled in the wrong box. Do not report the caption
+   you were looking for. If the value is not inside a labelled box, use
+   null. Trade forms carry several boxes with similar contents -- Port of
+   Discharge, Place of Delivery and Final Destination often hold different
+   places -- and this is how we confirm the right one was read.
+
+6. REPORT IDENTIFIERS COMPLETE. Reference numbers include their alphabetic
    prefix. If the page reads "INV NO. INV-2026-08841", the invoice number is
    "INV-2026-08841" -- not "2026-08841" and not "INV NO. INV-2026-08841".
    Take the whole token, and only that token.
 
-6. CALIBRATE CONFIDENCE HONESTLY. Use 0.95+ only when the text is crisp and
+7. CALIBRATE CONFIDENCE HONESTLY. Use 0.95+ only when the text is crisp and
    unambiguously labelled. Use 0.5-0.7 when characters are unclear, the
    field is inferred from an unlabelled position, or the scan is degraded.
    Use below 0.5 when you are guessing. An honest low score is far more
@@ -103,6 +118,54 @@ enhanced.
 Look again, carefully, at ONLY these fields. If a field is still not legible \
 or genuinely is not on the page, say status="not_found" -- do not invent a \
 value to fill the gap. A second honest "not_found" is the right answer."""
+
+
+def _cached_reading(
+    bundle: DocumentBundle,
+    model: str,
+    budget: RunBudget,
+    *,
+    name: str,
+    instructions: str,
+    content_fn,
+    schema: type[BaseModel],
+    key_extra: str = "",
+) -> BaseModel:
+    """Memoise what the MODEL SAID, keyed on (document bytes, model, call).
+
+    Caching the model's raw reading rather than the verified result is the
+    important part. An earlier version cached the finished ExtractionOutput,
+    which meant every change to grounding logic was invisible on any document
+    already seen -- including in production, where the graph reads the same
+    cache. Tightening a verification rule silently did nothing for the exact
+    documents most likely to have already been processed.
+
+    Reading is expensive and immutable for a given (document, model, prompt).
+    Verification is cheap, deterministic, and changes often. So only the
+    first is cached, and every load re-verifies from scratch.
+    """
+    key = f"{bundle.doc_id}.{model}.{SCHEMA_VERSION}.{name}"
+    if key_extra:
+        key += "." + hashlib.sha256(key_extra.encode()).hexdigest()[:8]
+    path = settings.data_dir / "reading_cache" / f"{key}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    if path.exists():
+        try:
+            return schema(**json.loads(path.read_text(encoding="utf-8")))
+        except Exception:
+            path.unlink(missing_ok=True)  # stale or corrupt: read it again
+
+    out = call_structured(
+        name=name,
+        model=model,
+        instructions=instructions,
+        content=content_fn(),
+        schema=schema,
+        budget=budget,
+    )
+    path.write_text(out.model_dump_json(indent=2), encoding="utf-8")
+    return out
 
 
 def _subset_schema(fields: list[str]) -> type[BaseModel]:
@@ -195,13 +258,12 @@ def extract(
             text_source = "none"
 
     # --- Tier 1: one vision call over the whole document
-    raw = call_structured(
+    raw = _cached_reading(
+        bundle, model, budget,
         name="extract_pass1",
-        model=model,
         instructions=INSTRUCTIONS,
-        content=_page_parts(bundle),
+        content_fn=lambda: _page_parts(bundle),
         schema=RawExtraction,
-        budget=budget,
     )
 
     grounded: dict[str, GroundedField] = {
@@ -223,13 +285,13 @@ def extract(
             parts = [text_part(RETRY_PREAMBLE), text_part("Fields to re-read: " + ", ".join(weak))]
             parts += _page_parts(bundle, image_paths=images)[1:]
 
-            retry = call_structured(
+            retry = _cached_reading(
+                bundle, model, budget,
                 name="extract_pass2_targeted",
-                model=model,
                 instructions=INSTRUCTIONS,
-                content=parts,
+                content_fn=lambda: parts,
                 schema=schema,
-                budget=budget,
+                key_extra="+".join(weak),
             )
             for name in weak:
                 before = grounded[name]
@@ -257,31 +319,16 @@ def extract_cached(
     model: Optional[str] = None,
     budget: Optional[RunBudget] = None,
 ) -> tuple[ExtractionOutput, bool]:
-    """Extraction, memoised on (document content, model). Returns (out, was_cached).
+    """Kept for callers. Reading is memoised inside `extract`; verification
+    always re-runs, so a grounding change takes effect on every document
+    immediately without re-paying for the vision call.
 
-    The graph checkpointer resumes at node boundaries, so it cannot help with
-    a crash that happens partway THROUGH extraction -- the node re-runs and
-    the vision call is paid for a second time. We measured exactly that on a
-    resume test: two extract_pass1 spans, double cost, for one document.
-
-    Since doc_id is a hash of the file bytes, keying on (doc_id, model) makes
-    extraction idempotent no matter where the process died. Between them, the
-    checkpointer and this cache mean the expensive call happens once per
-    (document, model), full stop.
+    The second element reports whether the vision call was served from cache.
     """
-    model = model or settings.extractor_model
-    path = settings.data_dir / "extract_cache" / f"{bundle.doc_id}.{model}.json"
-    path.parent.mkdir(parents=True, exist_ok=True)
-
-    if path.exists():
-        try:
-            return ExtractionOutput(**json.loads(path.read_text(encoding="utf-8"))), True
-        except Exception:
-            path.unlink(missing_ok=True)  # corrupt cache entry: re-extract
-
+    budget = budget or RunBudget()
+    calls_before = budget.calls
     out = extract(bundle, model=model, budget=budget)
-    path.write_text(out.model_dump_json(indent=2), encoding="utf-8")
-    return out, False
+    return out, budget.calls == calls_before
 
 
 def _reconcile(first: GroundedField, second: GroundedField) -> GroundedField:
