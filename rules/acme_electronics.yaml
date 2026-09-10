@@ -1,0 +1,109 @@
+customer: acme_electronics
+customer_name: Acme Electronics Manufacturing Pte Ltd
+version: "2026.09"
+description: >
+  The checks CG performs on inbound shipment documents for Acme Electronics.
+  Today these live in an experienced operator's head; this file is what it
+  looks like when they are written down. Swapping customers means swapping
+  this file -- the engine contains no customer logic.
+
+  Every rule carries a `why`. That is not decoration: it is what the Router
+  puts into the amendment email, so the supplier is told the reason rather
+  than just the rule name.
+
+fields:
+
+  consignee_name:
+    rule: equals_entity
+    expected: Acme Electronics Manufacturing Pte Ltd
+    # Above auto_match, accept without asking a model. Below auto_reject,
+    # refuse without asking. The band between is genuinely ambiguous -- is
+    # "Acme Electronics Mfg Pte" the same legal person? -- and is the one
+    # place in this validator where an LLM earns its cost.
+    fuzzy_auto_match: 0.95
+    fuzzy_auto_reject: 0.55
+    severity: blocking
+    required: true
+    why: >
+      The consignee must match the customs-registered legal entity exactly.
+      Dutch customs rejects an entry where the B/L consignee differs from the
+      importer of record, and the container sits accruing demurrage.
+
+  hs_code:
+    rule: in_list
+    expected:
+      - "8542.31"
+      - "8542.32"
+      - "8542.33"
+    severity: blocking
+    required: true
+    why: >
+      These three tariff lines are pre-classified with Acme's customs broker.
+      Anything outside them needs a fresh binding ruling before the goods can
+      clear, and the duty rate may differ.
+
+  port_of_loading:
+    rule: in_list
+    match_mode: port
+    expected:
+      - SINGAPORE (SGSIN)
+      - SHANGHAI (CNSHA)
+      - PORT KLANG (MYPKG)
+    severity: warning
+    required: true
+    why: Acme ships only from its three nominated origin ports.
+
+  port_of_discharge:
+    rule: in_list
+    match_mode: port
+    expected:
+      - ROTTERDAM (NLRTM)
+    severity: blocking
+    required: true
+    why: >
+      Acme clears customs at Rotterdam. A B/L discharging at Amsterdam or
+      Antwerp routes the cargo to the wrong customs office and the entry has
+      to be refiled from scratch.
+
+  incoterms:
+    rule: in_list
+    expected: [FOB, CIF]
+    severity: blocking
+    required: true
+    why: >
+      Only FOB and CIF are contracted with this supplier. A missing Incoterm
+      leaves it undefined who carries risk in transit, which is exactly the
+      argument nobody wants to have after a loss.
+
+  description_of_goods:
+    rule: contains_any
+    expected:
+      - INTEGRATED CIRCUIT
+      - SEMICONDUCTOR
+      - MEMORY MODULE
+      - PROCESSOR
+    severity: warning
+    required: true
+    why: >
+      The description must name the commodity class. "Electronic parts" is
+      not specific enough for customs and invites an inspection hold.
+
+  gross_weight:
+    rule: numeric_range
+    min: 1
+    max: 25000
+    unit: KG
+    severity: warning
+    required: true
+    why: >
+      Payload ceiling for a 40ft container. A figure above this means the
+      booking or the weight is wrong, and the carrier will refuse the load.
+
+  invoice_number:
+    rule: regex
+    expected: '^INV-\d{4}-\d{5}$'
+    severity: blocking
+    required: true
+    why: >
+      Acme's invoice numbering scheme. A reference in any other shape almost
+      always means the wrong invoice was attached to the shipment.

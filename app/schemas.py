@@ -127,6 +127,72 @@ class DocumentBundle(BaseModel):
         return "\n".join(p.text for p in self.pages)
 
 
+class MatchStatus(str, Enum):
+    MATCH = "match"
+    MISMATCH = "mismatch"
+    UNCERTAIN = "uncertain"
+    NOT_APPLICABLE = "not_applicable"
+
+
+Severity = Literal["blocking", "warning", "info"]
+
+
+class FieldValidation(BaseModel):
+    """One field checked against one customer rule."""
+
+    name: str
+    label: str
+    status: MatchStatus
+    found: Optional[str]
+    expected: Optional[str] = Field(description="What the rule required, rendered for a human.")
+    rule: str
+    severity: Severity
+    message: str
+    why: str = Field(default="", description="The business reason the rule exists.")
+
+    # Carried through from extraction so the UI can show one row per field.
+    extraction_confidence: float = 0.0
+    extraction_verdict: Verdict = Verdict.NOT_FOUND
+    evidence_quote: Optional[str] = None
+    evidence_page: Optional[int] = None
+    flags: list[str] = Field(default_factory=list)
+
+    # Set when the rule could be evaluated but extraction was not trusted.
+    provisional_status: Optional[MatchStatus] = Field(
+        default=None,
+        description="What the rule would have said, had the reading been reliable.",
+    )
+
+
+class ValidationOutput(BaseModel):
+    """Behaviour B's deliverable."""
+
+    doc_id: str
+    customer: str
+    customer_name: str
+    ruleset_version: str
+    results: list[FieldValidation]
+    usd_cost: float = 0.0
+    latency_ms: int = 0
+
+    def count(self, status: MatchStatus) -> int:
+        return sum(1 for r in self.results if r.status == status)
+
+    @property
+    def blocking_mismatches(self) -> list[FieldValidation]:
+        return [
+            r for r in self.results
+            if r.status == MatchStatus.MISMATCH and r.severity == "blocking"
+        ]
+
+    @property
+    def uncertain(self) -> list[FieldValidation]:
+        return [r for r in self.results if r.status == MatchStatus.UNCERTAIN]
+
+    def by_name(self, name: str) -> Optional[FieldValidation]:
+        return next((r for r in self.results if r.name == name), None)
+
+
 class ExtractionOutput(BaseModel):
     """Behaviour A's deliverable."""
 

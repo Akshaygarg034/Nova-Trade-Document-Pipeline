@@ -8,3 +8,4 @@ data/renders/
 ui/node_modules/
 ui/dist/
 samples/_raw/
+data/extract_cache/
