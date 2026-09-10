@@ -17,6 +17,7 @@ Two design decisions worth stating plainly:
 """
 from __future__ import annotations
 
+import json
 import pathlib
 import time
 from typing import Optional
@@ -248,6 +249,39 @@ def extract(
         latency_ms=int((time.perf_counter() - started) * 1000),
         warnings=warnings,
     )
+
+
+def extract_cached(
+    bundle: DocumentBundle,
+    *,
+    model: Optional[str] = None,
+    budget: Optional[RunBudget] = None,
+) -> tuple[ExtractionOutput, bool]:
+    """Extraction, memoised on (document content, model). Returns (out, was_cached).
+
+    The graph checkpointer resumes at node boundaries, so it cannot help with
+    a crash that happens partway THROUGH extraction -- the node re-runs and
+    the vision call is paid for a second time. We measured exactly that on a
+    resume test: two extract_pass1 spans, double cost, for one document.
+
+    Since doc_id is a hash of the file bytes, keying on (doc_id, model) makes
+    extraction idempotent no matter where the process died. Between them, the
+    checkpointer and this cache mean the expensive call happens once per
+    (document, model), full stop.
+    """
+    model = model or settings.extractor_model
+    path = settings.data_dir / "extract_cache" / f"{bundle.doc_id}.{model}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    if path.exists():
+        try:
+            return ExtractionOutput(**json.loads(path.read_text(encoding="utf-8"))), True
+        except Exception:
+            path.unlink(missing_ok=True)  # corrupt cache entry: re-extract
+
+    out = extract(bundle, model=model, budget=budget)
+    path.write_text(out.model_dump_json(indent=2), encoding="utf-8")
+    return out, False
 
 
 def _reconcile(first: GroundedField, second: GroundedField) -> GroundedField:

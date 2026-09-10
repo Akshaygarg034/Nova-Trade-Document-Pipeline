@@ -140,6 +140,45 @@ def unverified_digits(value: str, corpus: str) -> list[str]:
     return missing
 
 
+def snap_to_source(value: str, corpus: str, min_score: float = 0.88) -> tuple[str, bool]:
+    """Replace the model's rendering of a value with the document's own text.
+
+    The extractor's job is to LOCATE a value. The document is the authority
+    on how that value actually reads. When the two differ only slightly, the
+    document wins.
+
+    This is not cosmetic. Two real misreads on our own samples:
+        "Acne Electronics Manufacturing"  for "Acme ..."   -> matched a rule
+        "INV:2026-08841"                  for "INV-..."    -> failed a rule,
+                                                              emailing a
+                                                              supplier who had
+                                                              done nothing wrong
+    Both are transcription noise, not shipment facts, and both vanish once
+    the value is snapped back to the characters actually printed.
+
+    It can only ever move a value TOWARDS the document, so it cannot hide a
+    genuine supplier error -- if the page really does read "Acne", that is
+    what gets reported, and the rule correctly rejects it.
+
+    Guarded to a reliable corpus by the caller: snapping to garbled OCR would
+    corrupt a value the model had read correctly.
+    """
+    if not value or not corpus or value in corpus:
+        return value, False
+
+    alignment = fuzz.partial_ratio_alignment(value.upper(), corpus.upper())
+    if alignment is None or alignment.score < min_score * 100:
+        return value, False
+
+    span = corpus[alignment.dest_start : alignment.dest_end].strip(" \n\t:;,")
+    if not span or span.upper() == value.upper():
+        return value, False
+    # The window must be a near-identical rendering, not merely nearby text.
+    if fuzz.ratio(norm(span), norm(value)) < 85:
+        return value, False
+    return span, True
+
+
 def token_aligned(value: str, corpus: str) -> bool:
     """Does `value` equal a complete identifier token on the page?
 
@@ -337,6 +376,15 @@ def ground_field(
         if changed:
             repair_flags.append("identifier_repaired")
             value = repaired
+
+    # Snap the value to the document's own characters. Only against the PDF
+    # text layer: snapping to OCR output would import scanner noise into a
+    # value the model may well have read correctly off the image.
+    if name not in FREETEXT_FIELDS and text_source == "pdf_text" and corpus.strip():
+        snapped, changed = snap_to_source(value, corpus)
+        if changed:
+            repair_flags.append(f"snapped_to_source:{value}")
+            value = snapped
 
     score, grounded, flags = score_grounding(
         name, value, raw.evidence_quote, corpus, text_source
