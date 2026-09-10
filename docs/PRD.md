@@ -282,12 +282,12 @@ but **escaped errors** — values wrong *and* auto-approved:
 | | Clean | Degraded | All |
 |---|---|---|---|
 | Field accuracy | 100% | 62.5% | 87.5% |
-| Auto-approve accuracy | 100% | 100% | **100%** (15/15) |
+| Auto-approve accuracy | 100% | 100% | **100%** (16/16) |
 | **Escaped errors** | **0** | **0** | **0** |
 | Surfaced-error recall | — | 100% (3/3) | 100% (3/3) |
-| Confidence separation | — | +0.11 | **+0.38** |
+| Confidence separation | — | +0.14 | **+0.42** |
 
-Plus six offline unit suites that make no LLM calls, encoding every failure above as a
+Plus seven offline unit suites that make no LLM calls, encoding every failure above as a
 regression test. *Caveat:* 24 readings across 3 documents — direction right, sample
 nowhere near enough to claim calibration.
 

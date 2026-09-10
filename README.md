@@ -112,7 +112,7 @@ vision call is not paid for twice.
 ### Tests and eval
 
 ```bash
-for t in grounding repair snap validator router nlq_guards; do python evals/test_$t.py; done
+for t in grounding repair snap validator router nlq_guards reconcile; do python evals/test_$t.py; done
 python evals/run_eval.py        # offline eval against the golden set
 ```
 
@@ -155,19 +155,19 @@ From `python evals/run_eval.py` over the golden set (3 documents, 24 field readi
 | | Clean | Degraded | All |
 |---|---|---|---|
 | Field accuracy | 100% | 62.5% | 87.5% |
-| **Auto-approve accuracy** | **100%** | **100%** | **100%** (15/15) |
+| **Auto-approve accuracy** | **100%** (15/15) | **100%** (1/1) | **100%** (16/16) |
 | **Escaped errors** (wrong *and* approved) | **0** | **0** | **0** |
 | Surfaced-error recall | — | 100% (3/3) | 100% (3/3) |
 | Hallucinated fields | 0 | 0 | 0 |
-| Confidence separation | — | +0.11 | **+0.38** |
+| Confidence separation | — | +0.14 | **+0.42** |
 
 The headline metric is deliberately not field accuracy. A pipeline that is 95%
 accurate and silent about the rest is worse than one that is 87% accurate and says
 so: the first ships wrong customs data, the second asks a human. Every wrong value
 on the degraded scan was caught before approval.
 
-Confidence separation is the gap between mean confidence when correct (0.84) and
-when wrong (0.46). Without that gap the score would be decoration.
+Confidence separation is the gap between mean confidence when correct (0.86) and
+when wrong (0.44). Without that gap the score would be decoration.
 
 ---
 

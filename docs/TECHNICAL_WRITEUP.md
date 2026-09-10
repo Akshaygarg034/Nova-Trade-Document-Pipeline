@@ -69,7 +69,7 @@ fuzziness); **snap-to-source** (the model locates a value, the document decides 
 reads, guarded so it can only move *toward* the page, so a genuine supplier typo still
 fails its rule); and **OCR trust 0.92 → 0.80**, since verification is only as good as
 the corpus behind it. Before: 3 wrong values auto-approved on the degraded scan. After:
-**0 escaped errors**, auto-approve accuracy 100% (15/15).
+**0 escaped errors**, auto-approve accuracy 100% (16/16).
 
 **3 · Substring matches inside unrelated words.** The Incoterm check found `CIF` in the
 page text — inside the word **SPECIFICALLY**, in liability boilerplate, on a document

@@ -64,8 +64,10 @@ print('context:', [t[m.start()-30:m.end()+10].replace(chr(10),' ') for m in re.f
 python run_extract.py samples/messy/SHP-2287_BOL_scan.jpg
 ```
 
-**Look for:** most fields `??` with flags like `digits_not_on_page:12,960`,
-`reextraction_disagreement`, `weak_grounding`. The system read a bad scan and
+**Look for:** most fields `??` with flags like `digits_not_on_page:...`,
+`reextraction_disagreement`, `weak_grounding`. (The model misreads the blurry
+weight digit differently on each fresh run, so the exact number varies.) The
+system read a bad scan and
 says so instead of guessing. Two `span` lines mean the escalation ladder fired
 — weak fields were re-read at 300 DPI after deskew.
 
@@ -251,7 +253,7 @@ Free — it re-verifies from cached readings. **Look for:**
 | Auto-approve accuracy | 100% | 100% | 100% |
 | **Escaped errors** | **0** | **0** | **0** |
 | Surfaced-error recall | — | 100% | 100% |
-| Confidence separation | — | +0.11 | **+0.41** |
+| Confidence separation | — | +0.14 | **+0.42** |
 
 *Escaped errors* — wrong **and** auto-approved — is the headline, not accuracy.
 *Confidence separation* is the gap between mean confidence when correct and
@@ -268,7 +270,7 @@ and watch auto-approvals collapse at `$0.00000`. Change it back.
 ## 8 · Test suites — all offline, all free
 
 ```bash
-for t in grounding repair snap validator router nlq_guards; do python evals/test_$t.py; done
+for t in grounding repair snap validator router nlq_guards reconcile; do python evals/test_$t.py; done
 ```
 
 Each encodes a bug found by running the system:
@@ -281,6 +283,7 @@ Each encodes a bug found by running the system:
 | `test_validator` | Amsterdam ≠ Rotterdam; that the suite makes **zero** LLM calls |
 | `test_router` | 50 evaluations give one decision; drafts omitting a discrepancy are rejected |
 | `test_nlq_guards` | SQL injection, statement stacking, read-only enforcement |
+| `test_reconcile` | when two passes differ, the verified reading wins; two verified conflicts stay uncertain |
 
 ---
 

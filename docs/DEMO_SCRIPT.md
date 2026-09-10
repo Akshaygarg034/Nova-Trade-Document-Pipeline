@@ -102,10 +102,13 @@ the draft email. Hover over **Send to supplier**.
 **Show:** click **`SHP-2287_BOL_scan.jpg`** on the left.
 
 > "Same shipment, as a bad phone photo. Six fields came back uncertain, and
-> none were approved. Look at gross weight. The model read twelve-nine-sixty
-> and was ninety-eight percent sure. It's wrong. The page says
-> twelve-nine-eighty. Those numbers are nowhere on the page, so confidence
-> dropped to fourteen percent."
+> none were approved. Look at gross weight. The model was ninety-nine percent
+> sure, and it read the number wrong. The page says twelve-nine-eighty. What it
+> read is nowhere on the page, so confidence dropped to about fifteen percent."
+
+> **Note:** the model misreads that blurry digit differently on each fresh run
+> — we have seen 12,960 and 12,896. The wording above works whatever is on your
+> screen. Point at the row rather than reading the wrong number aloud.
 
 **Point at the Port of discharge row.**
 
