@@ -70,13 +70,13 @@
     "field": "description_of_goods",
     "truth": "ELECTRONIC INTEGRATED CIRCUITS - PROCESSORS AND CONTROLLERS",
     "got": "ELECTRONIC INTEGRATED CIRCUITS PROCESSORS AND CONTROLLERS",
-    "verdict": "uncertain",
-    "confidence": 0.45,
+    "verdict": "found",
+    "confidence": 1.0,
     "source_label": "Kind of Packages or Units; Description of Goods",
     "correct": true,
-    "auto_approved": false,
+    "auto_approved": true,
     "flags": [
-      "reextraction_disagreement"
+      "confirmed_by_reextraction"
     ]
   },
   {

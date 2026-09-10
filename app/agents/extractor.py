@@ -24,9 +24,10 @@ import time
 from typing import Optional
 
 from pydantic import BaseModel, create_model
+from rapidfuzz import fuzz
 
 from app.config import settings
-from app.grounding import ground_field
+from app.grounding import FREETEXT_FIELDS, ground_field
 from app.llm import RunBudget, call_structured, image_part, text_part
 from app.preprocess import HIGH_DPI, enhance_image, render_pdf_page
 from app.schemas import (
@@ -331,6 +332,23 @@ def extract_cached(
     return out, budget.calls == calls_before
 
 
+def _readings_agree(name: str, a: str, b: str) -> bool:
+    """Do two passes agree? The test has to fit the field.
+
+    Exact equality is right for an identifier or a port code, and wrong for
+    prose. On our clean B/L one pass read "480 CARTONS OF ELECTRONIC
+    INTEGRATED CIRCUITS..." and the other "ELECTRONIC INTEGRATED
+    CIRCUITS..." -- both correct, differing only on whether the carton count
+    belongs in the description. Exact matching called that a disagreement and
+    forced a perfectly good field to UNCERTAIN, spending a human touch on
+    nothing. Same mistake as conflating grounding with citation quality: the
+    strictness was in the wrong place.
+    """
+    if name in FREETEXT_FIELDS:
+        return fuzz.token_set_ratio(a, b) >= 85
+    return a == b
+
+
 def _reconcile(first: GroundedField, second: GroundedField) -> GroundedField:
     """Merge a first-pass and second-pass reading of the same field.
 
@@ -340,8 +358,9 @@ def _reconcile(first: GroundedField, second: GroundedField) -> GroundedField:
     forced to UNCERTAIN no matter how confident either pass was.
     """
     a, b = (first.value or "").strip().upper(), (second.value or "").strip().upper()
+    agree = _readings_agree(first.name, a, b)
 
-    if a and b and a != b:
+    if a and b and not agree:
         loser, winner = (first, second) if second.final_confidence >= first.final_confidence else (second, first)
         merged = winner.model_copy(deep=True)
         merged.verdict = Verdict.UNCERTAIN
@@ -353,7 +372,7 @@ def _reconcile(first: GroundedField, second: GroundedField) -> GroundedField:
         ).strip()
         return merged
 
-    if a and b and a == b:
+    if a and b and agree:
         merged = (second if second.final_confidence >= first.final_confidence else first).model_copy(deep=True)
         merged.final_confidence = round(min(1.0, merged.final_confidence * 1.10), 3)
         merged.flags = list(dict.fromkeys(merged.flags + ["confirmed_by_reextraction"]))
