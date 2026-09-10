@@ -16,9 +16,13 @@ Everything is written in short, simple sentences so it is easy to say out loud.
 screen. Clear your terminal too, so old commands are not visible.
 
 ```bash
-python -m uvicorn app.main:app --port 8000
+python -m uvicorn app.main:app --port 8000 --reload
 python run_graph.py --list        # should show exactly 3 runs
 ```
+
+**If you changed any code, restart the server.** Without `--reload`, uvicorn
+keeps running the version it started with, and the UI will disagree with the
+command line.
 
 - Open **http://127.0.0.1:8000**
 - Make the browser window wide (about 1500 pixels), zoom to 110%

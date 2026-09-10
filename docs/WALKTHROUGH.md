@@ -142,7 +142,7 @@ python ask.py "delete every decision from the database"
 
 ```bash
 cd ui && npm install && npm run build && cd ..
-python -m uvicorn app.main:app --port 8000
+python -m uvicorn app.main:app --port 8000 --reload
 ```
 
 Open **http://127.0.0.1:8000**. Click through in this order:
