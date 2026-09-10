@@ -168,6 +168,9 @@ class ValidationOutput(BaseModel):
     """Behaviour B's deliverable."""
 
     doc_id: str
+    # Human-facing reference. doc_id is a content hash and must never appear
+    # in an email to a supplier.
+    document_ref: str = ""
     customer: str
     customer_name: str
     ruleset_version: str
@@ -191,6 +194,55 @@ class ValidationOutput(BaseModel):
 
     def by_name(self, name: str) -> Optional[FieldValidation]:
         return next((r for r in self.results if r.name == name), None)
+
+
+class DecisionType(str, Enum):
+    AUTO_APPROVE = "auto_approve"
+    FLAG_FOR_REVIEW = "flag_for_review"
+    AMENDMENT_REQUEST = "amendment_request"
+
+
+class Discrepancy(BaseModel):
+    """One thing the supplier has to fix, in the terms they need to hear it."""
+
+    field: str
+    label: str
+    found: Optional[str]
+    expected: Optional[str]
+    severity: Severity
+    why: str
+
+
+class EmailDraft(BaseModel):
+    subject: str
+    body: str
+    to_role: str = "SU"
+    source: Literal["llm", "template"] = "llm"
+    # Non-negotiable: nothing leaves this system without a human pressing send.
+    requires_human_send: bool = True
+
+
+class RouterOutput(BaseModel):
+    """Behaviour C's deliverable."""
+
+    doc_id: str
+    decision: DecisionType
+
+    # Deterministic, machine-readable justification. This is the audit record:
+    # given the same validation input, these reasons are always identical.
+    policy_reasons: list[str] = Field(default_factory=list)
+
+    # Human-readable explanation of the same thing, for the operator.
+    rationale: str = ""
+
+    discrepancies: list[Discrepancy] = Field(default_factory=list)
+    uncertain_fields: list[str] = Field(default_factory=list)
+    lowest_confidence: float = 1.0
+
+    draft_email: Optional[EmailDraft] = None
+    usd_cost: float = 0.0
+    latency_ms: int = 0
+    warnings: list[str] = Field(default_factory=list)
 
 
 class ExtractionOutput(BaseModel):

@@ -13,6 +13,7 @@ import json
 import sys
 
 from app.agents.extractor import extract
+from app.agents.router import route
 from app.agents.validator import validate
 from app.config import settings
 from app.llm import RunBudget
@@ -55,10 +56,13 @@ def main() -> int:
     budget = RunBudget()
     ext = cached_extract(args.path, args.model, budget, args.fresh)
     val = validate(ext, args.customer, budget=budget)
+    dec = route(val, budget=budget)
 
     if args.json:
-        print(json.dumps({"extraction": ext.model_dump(), "validation": val.model_dump()},
-                         indent=2, default=str))
+        print(json.dumps(
+            {"extraction": ext.model_dump(), "validation": val.model_dump(),
+             "decision": dec.model_dump()},
+            indent=2, default=str))
         return 0
 
     print(f"\n{'=' * 100}")
@@ -96,9 +100,29 @@ def main() -> int:
             prov = f" [rule would say: {r.provisional_status.value}]" if r.provisional_status else ""
             print(f"   {r.label}: {r.message[:90]}{prov}")
 
-    print(f"\ncost: extraction ${ext.usd_cost:.5f} + validation ${val.usd_cost:.5f}"
-          f" = ${ext.usd_cost + val.usd_cost:.5f}")
-    print(f"latency: extraction {ext.latency_ms} ms + validation {val.latency_ms} ms")
+    print("\n" + "=" * 100)
+    print(f"DECISION: {dec.decision.value.upper()}"
+          f"      lowest field confidence {dec.lowest_confidence:.2f}")
+    print("=" * 100)
+    print("why (deterministic policy):")
+    for r in dec.policy_reasons:
+        print(f"   - {r}")
+    print(f"\nrationale: {dec.rationale}")
+
+    if dec.draft_email:
+        print(f"\n--- DRAFT EMAIL to {dec.draft_email.to_role} "
+              f"(source={dec.draft_email.source}; human must press send) ---")
+        print(f"Subject: {dec.draft_email.subject}\n")
+        print(dec.draft_email.body)
+        print("--- end draft ---")
+    for w in dec.warnings:
+        print(f"   router warning: {w}")
+
+    total = ext.usd_cost + val.usd_cost + dec.usd_cost
+    print(f"\ncost: extract ${ext.usd_cost:.5f} + validate ${val.usd_cost:.5f}"
+          f" + route ${dec.usd_cost:.5f} = ${total:.5f}")
+    print(f"latency: extract {ext.latency_ms} ms + validate {val.latency_ms} ms"
+          f" + route {dec.latency_ms} ms")
     for s in budget.spans:
         print(f"   span {s.name:26s} {s.model:16s} {s.latency_ms:6d}ms  ${s.usd:.5f}")
     return 0

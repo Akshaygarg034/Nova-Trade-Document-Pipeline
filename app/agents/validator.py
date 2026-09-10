@@ -227,6 +227,7 @@ def validate(
 
     return ValidationOutput(
         doc_id=extraction.doc_id,
+        document_ref=pathlib.Path(extraction.filename).stem,
         customer=rs.customer,
         customer_name=rs.customer_name,
         ruleset_version=rs.version,
