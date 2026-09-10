@@ -48,6 +48,20 @@ FIELD_MAP = {
         "freight": "FREIGHT & CHARGES",
         "place_date": "Place & Date of issue",
         "originals": "Number of Original B(s)/L",
+        "local_vessel": "Local Vessel",
+        "from_place": "From",
+        "transhipment": "For transhipment to",
+        "total_words": "TOTAL NUMBER OF PACKAGES OR UNITS (IN WORDS)",
+        "declared_value": "Declared value USD",
+        "revenue_tons": "Revenue Tons",
+        "rate": "Rate",
+        "per": "Per",
+        "collect": "Collect",
+        "ex_rate": "Ex. Rate",
+        "prepaid_at": "Prepaid at",
+        "total_prepaid": "Total Prepaid in Yen",
+        "payable_at": "Payable at",
+        "for_master": "For the Master",
     },
     "dhx": {
         "bol_no": "BILL OF LADING NO  PO NO",
@@ -66,12 +80,40 @@ FIELD_MAP = {
         "export_ref": "EXPORT REFERENCES",
         "place_date": "DATE SHIPPED",
         "originals": "NUMBER OF ORIGINALS",
+        "booking_no": "BOOKING NO",
+        "quote_no": "QUOTE NO",
+        "forwarding_agent": "FORWARDING AGENT FMC NO",
+        "origin_point": "POINT AND COUNTRY OF ORIGIN",
+        "delivery_to": "FOR  DELIVERY TO",
+        "shipper_phone": "SHIPPER PHONE NO",
+        "consignee_phone": "CONSIGNEE PHONE NO",
+        "notify_phone": "NOTIFY PARTY PHONE NO",
+        "delivery_phone": "DELIVERY PHONE NO",
+        "pre_carriage": "PRE-CARRIAGE BY",
+        "place_receipt": "PLACE OF RECEIPT BY PRE-CARRIER",
+        "loading_pier": "LOADING PIER TERMINAL",
+        "freight_class": "FREIGHT CLASS",
+        "hazmat": " H M",
+        "declared_value": "DECLARED VALUE US$",
+        "total_collect": "TOTAL_2",
+        "issued_at": "ISSUED AT",
+        "issue_date": "DATE",
+        "issued_by": "BY",
+        "initials": "INITIALS",
     },
 }
 
 # Templates whose named field is a single narrow row; long values must spill
 # into the form's numbered continuation rows ("FOO", "FOO 1", "FOO 2", ...).
-MULTIROW = {"dhx": {"description": "DESCRIPTION OF PACKAGE AND GOODS"}}
+MULTIROW = {
+    "dhx": {
+        "description": "DESCRIPTION OF PACKAGE AND GOODS",
+        "charges": "CHARGES",
+        "basis": "BASIS",
+        "rate": "RATE",
+        "collect": "COLLECT",
+    }
+}
 
 TEMPLATE_FILE = {"jse": "jse_bol_sample.pdf", "dhx": "dhx_multimodal.pdf"}
 # Keep only the face of the B/L; trailing pages are boilerplate terms.
@@ -109,6 +151,18 @@ def fill(shipment_id: str, spec: dict) -> pathlib.Path:
             w.text_fontsize = 7
             w.update()
             filled += 1
+
+    # The JSE template ships a 120pt "SAMPLE" watermark across the cargo box.
+    # Remove text only -- line art stays, so the form rules survive intact.
+    for page in doc:
+        for rect in page.search_for("SAMPLE"):
+            page.add_redact_annot(rect)
+        if page.first_annot:
+            page.apply_redactions(
+                images=pymupdf.PDF_REDACT_IMAGE_NONE,
+                graphics=pymupdf.PDF_REDACT_LINE_ART_NONE,
+                text=pymupdf.PDF_REDACT_TEXT_REMOVE,
+            )
 
     doc.bake()  # widgets -> real page content, so the text layer is genuine
     out = CLEAN / f"{shipment_id}_BOL.pdf"
