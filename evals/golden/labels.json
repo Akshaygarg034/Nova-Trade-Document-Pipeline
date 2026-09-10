@@ -1,0 +1,44 @@
+{
+  "SHP-1042": {
+    "doc_type": "BILL_OF_LADING",
+    "template": "jse",
+    "fields": {
+      "consignee_name": "Acme Electronics Manufacturing Pte Ltd",
+      "hs_code": "8542.31",
+      "port_of_loading": "SINGAPORE (SGSIN)",
+      "port_of_discharge": "ROTTERDAM (NLRTM)",
+      "incoterms": "FOB",
+      "description_of_goods": "ELECTRONIC INTEGRATED CIRCUITS - PROCESSORS AND CONTROLLERS",
+      "gross_weight": "12450.00 KGS",
+      "invoice_number": "INV-2026-08841"
+    }
+  },
+  "SHP-2287": {
+    "doc_type": "BILL_OF_LADING",
+    "template": "dhx",
+    "fields": {
+      "consignee_name": "Acme Electronics Mfg Pte",
+      "hs_code": "8542.39",
+      "port_of_loading": "SHANGHAI (CNSHA)",
+      "port_of_discharge": "ROTTERDAM (NLRTM)",
+      "incoterms": null,
+      "description_of_goods": "ELECTRONIC INTEGRATED CIRCUITS - MEMORY MODULES",
+      "gross_weight": "12980 KGS",
+      "invoice_number": "INV-2026-08847"
+    }
+  },
+  "SHP-2287-scan": {
+    "doc_type": "BILL_OF_LADING",
+    "template": "dhx-degraded",
+    "fields": {
+      "consignee_name": "Acme Electronics Mfg Pte",
+      "hs_code": "8542.39",
+      "port_of_loading": "SHANGHAI (CNSHA)",
+      "port_of_discharge": "ROTTERDAM (NLRTM)",
+      "incoterms": null,
+      "description_of_goods": "ELECTRONIC INTEGRATED CIRCUITS - MEMORY MODULES",
+      "gross_weight": "12980 KGS",
+      "invoice_number": "INV-2026-08847"
+    }
+  }
+}

@@ -1,0 +1,4 @@
+# OPTIONAL. Enables Tier-3 grounding: a fully independent OCR text corpus to
+# verify LLM-quoted evidence against, for scanned docs with no text layer.
+# Without it the system falls back to LLM verbatim transcription (see README).
+rapidocr-onnxruntime>=1.3

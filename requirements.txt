@@ -1,0 +1,26 @@
+# --- LLM + orchestration ---
+openai>=1.50
+langgraph>=0.2.50
+langgraph-checkpoint-sqlite>=2.0.0
+
+# --- API layer ---
+fastapi>=0.115
+uvicorn[standard]>=0.32
+python-multipart>=0.0.12
+sse-starlette>=2.1
+
+# --- models / config ---
+pydantic>=2.9
+pydantic-settings>=2.6
+python-dotenv>=1.0
+PyYAML>=6.0
+
+# --- document handling (PyMuPDF renders + reads text with zero system deps) ---
+PyMuPDF>=1.24
+pillow>=10.4
+numpy>=1.26
+opencv-python-headless>=4.10
+
+# --- matching + sample generation ---
+rapidfuzz>=3.10
+reportlab>=4.2
