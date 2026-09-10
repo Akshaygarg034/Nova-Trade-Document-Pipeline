@@ -25,6 +25,11 @@ class Settings(BaseSettings):
     max_llm_calls_per_run: int = 12
     llm_timeout_seconds: int = 90
 
+    # OCR gives scanned pages a verification corpus that is independent of
+    # the extracting model. Turn it off to fall back to LLM transcription,
+    # which is weaker evidence and is trusted less accordingly.
+    use_ocr: bool = True
+
     auto_approve_min_confidence: float = 0.85
     uncertain_below: float = 0.60
 

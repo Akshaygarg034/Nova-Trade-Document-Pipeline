@@ -49,6 +49,9 @@ def _ocr(image_path: str) -> Optional[str]:
     """
     global _ocr_engine, _ocr_tried
 
+    if not settings.use_ocr:
+        return None
+
     cache = pathlib.Path(image_path).with_suffix(".ocr.txt")
     if cache.exists():
         return cache.read_text(encoding="utf-8") or None
