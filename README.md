@@ -49,6 +49,17 @@ It is ~100 MB and pure pip, no system packages.
 
 ## Run it
 
+### Reset to a known demo state
+
+```bash
+python reset_demo.py            # free: reuses cached vision calls, ~35s
+python reset_demo.py --check    # verify only, change nothing
+python reset_demo.py --cold     # [$] ~0.05: genuine from-scratch run
+```
+
+Leaves exactly three runs in the database, one per decision path. Safe to run
+while the server is up.
+
 ### The whole pipeline, on one document
 
 ```bash

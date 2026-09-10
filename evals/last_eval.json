@@ -58,7 +58,7 @@
     "truth": "FOB",
     "got": "FOB",
     "verdict": "found",
-    "confidence": 0.96,
+    "confidence": 0.98,
     "source_label": "Kind of Packages or Units; Description of Goods",
     "correct": true,
     "auto_approved": true,
@@ -71,13 +71,11 @@
     "truth": "ELECTRONIC INTEGRATED CIRCUITS - PROCESSORS AND CONTROLLERS",
     "got": "ELECTRONIC INTEGRATED CIRCUITS PROCESSORS AND CONTROLLERS",
     "verdict": "found",
-    "confidence": 1.0,
+    "confidence": 0.95,
     "source_label": "Kind of Packages or Units; Description of Goods",
     "correct": true,
     "auto_approved": true,
-    "flags": [
-      "confirmed_by_reextraction"
-    ]
+    "flags": []
   },
   {
     "doc": "SHP-1042",
@@ -99,12 +97,13 @@
     "truth": "INV-2026-08841",
     "got": "INV-2026-08841",
     "verdict": "found",
-    "confidence": 0.97,
+    "confidence": 0.98,
     "source_label": "Marks / Numbers",
     "correct": true,
     "auto_approved": true,
     "flags": [
-      "snapped_to_source:INV.2026-08841"
+      "identifier_repaired",
+      "reextraction_resolved_by_grounding"
     ]
   },
   {
@@ -170,7 +169,7 @@
     "truth": null,
     "got": null,
     "verdict": "not_found",
-    "confidence": 0.95,
+    "confidence": 0.9,
     "source_label": null,
     "correct": true,
     "auto_approved": false,
@@ -185,7 +184,7 @@
     "truth": "ELECTRONIC INTEGRATED CIRCUITS - MEMORY MODULES",
     "got": "512 CARTONS ELECTRONIC INTEGRATED CIRCUITS",
     "verdict": "found",
-    "confidence": 0.98,
+    "confidence": 0.96,
     "source_label": "DESCRIPTION OF PACKAGE AND GOODS",
     "correct": true,
     "auto_approved": true,
@@ -198,7 +197,7 @@
     "truth": "12980 KGS",
     "got": "12,980 KGS",
     "verdict": "found",
-    "confidence": 0.891,
+    "confidence": 0.873,
     "source_label": "GROSS WEIGHT",
     "correct": true,
     "auto_approved": true,
@@ -213,7 +212,7 @@
     "truth": "INV-2026-08847",
     "got": "INV-2026-08847",
     "verdict": "found",
-    "confidence": 0.891,
+    "confidence": 0.873,
     "source_label": "EXPORT REFERENCES",
     "correct": true,
     "auto_approved": true,
@@ -228,7 +227,7 @@
     "truth": "Acme Electronics Mfg Pte",
     "got": "Acme Electronics Mfg Pte",
     "verdict": "uncertain",
-    "confidence": 0.784,
+    "confidence": 0.777,
     "source_label": "CONSIGNEE (NOT NEGOTIABLE UNLESS CONSIGNED TO ORDER)",
     "correct": true,
     "auto_approved": false,
@@ -244,8 +243,8 @@
     "truth": "8542.39",
     "got": "8542.39",
     "verdict": "uncertain",
-    "confidence": 0.171,
-    "source_label": "DESCRIPTION OF PACKAGE AND GOODS",
+    "confidence": 0.173,
+    "source_label": "PARTICULARS FURNISHED BY SHIPPER",
     "correct": true,
     "auto_approved": false,
     "flags": [
@@ -260,15 +259,15 @@
     "quality": "degraded",
     "field": "port_of_loading",
     "truth": "SHANGHAI (CNSHA)",
-    "got": "SHANGHAI (CNSHA)",
+    "got": "SHANGHAI (CHSHA)",
     "verdict": "uncertain",
-    "confidence": 0.777,
+    "confidence": 0.706,
     "source_label": "PORT OF LOADING",
-    "correct": true,
+    "correct": false,
     "auto_approved": false,
     "flags": [
       "evidence_citation_not_verbatim",
-      "confirmed_by_reextraction"
+      "reextraction_resolved_by_grounding"
     ]
   },
   {
@@ -276,15 +275,15 @@
     "quality": "degraded",
     "field": "port_of_discharge",
     "truth": "ROTTERDAM (NLRTM)",
-    "got": "AMSTERDAM, NETHERLANDS",
+    "got": "AMSTERDAM, NETHERLANDS.",
     "verdict": "uncertain",
-    "confidence": 0.768,
+    "confidence": 0.45,
     "source_label": "PORT OF DISCHARGE",
     "correct": false,
     "auto_approved": false,
     "flags": [
       "evidence_citation_not_verbatim",
-      "confirmed_by_reextraction"
+      "reextraction_disagreement"
     ]
   },
   {
@@ -294,7 +293,7 @@
     "truth": null,
     "got": null,
     "verdict": "not_found",
-    "confidence": 0.4,
+    "confidence": 0.9,
     "source_label": null,
     "correct": true,
     "auto_approved": false,
@@ -307,16 +306,17 @@
     "quality": "degraded",
     "field": "description_of_goods",
     "truth": "ELECTRONIC INTEGRATED CIRCUITS - MEMORY MODULES",
-    "got": "MEMORY MODULES",
+    "got": "512 CARTONS ELECTRONIC INTEGRATED CIRCUITS MEMORY MODULES",
     "verdict": "uncertain",
-    "confidence": 0.149,
+    "confidence": 0.154,
     "source_label": "DESCRIPTION OF PACKAGE AND GOODS",
     "correct": true,
     "auto_approved": false,
     "flags": [
+      "evidence_citation_not_verbatim",
       "value_absent_from_document",
       "possible_hallucination",
-      "reextraction_disagreement"
+      "confirmed_by_reextraction"
     ]
   },
   {
@@ -324,14 +324,14 @@
     "quality": "degraded",
     "field": "gross_weight",
     "truth": "12980 KGS",
-    "got": "12,960 KGS",
+    "got": "12,896 KGS",
     "verdict": "uncertain",
-    "confidence": 0.157,
-    "source_label": "GROSS",
+    "confidence": 0.158,
+    "source_label": "GROSS WEIGHT",
     "correct": false,
     "auto_approved": false,
     "flags": [
-      "digits_not_on_page:12,960",
+      "digits_not_on_page:12,896",
       "weak_grounding",
       "reextraction_disagreement"
     ]
@@ -343,7 +343,7 @@
     "truth": "INV-2026-08847",
     "got": "INV-2026-08847",
     "verdict": "found",
-    "confidence": 0.854,
+    "confidence": 0.862,
     "source_label": "EXPORT REFERENCES",
     "correct": true,
     "auto_approved": true,

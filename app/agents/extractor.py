@@ -353,12 +353,31 @@ def _reconcile(first: GroundedField, second: GroundedField) -> GroundedField:
     """Merge a first-pass and second-pass reading of the same field.
 
     Agreement across two independent looks is real evidence, so we allow a
-    modest confidence bump. Disagreement is the opposite: two passes that
-    read different values mean we do not know the answer, and the field is
+    modest confidence bump. Genuine disagreement is the opposite: the field is
     forced to UNCERTAIN no matter how confident either pass was.
+
+    But two differing readings are only *genuinely* ambiguous when both of
+    them passed verification. If one is grounded on the page and the other is
+    not, that is not a tie -- one reading failed its own checks. Treating it
+    as a tie cost us the auto-approve path on a perfectly clean document: one
+    pass read "INV NO. INV-2026-08841", the other dropped the prefix to
+    "2026-08841", and the correct, fully grounded value was pushed to 0.45.
     """
     a, b = (first.value or "").strip().upper(), (second.value or "").strip().upper()
     agree = _readings_agree(first.name, a, b)
+
+    # Exactly one reading verified against the page: trust that one.
+    if a and b and not agree and (first.grounded != second.grounded):
+        winner, loser = (first, second) if first.grounded else (second, first)
+        merged = winner.model_copy(deep=True)
+        merged.flags = list(dict.fromkeys(
+            merged.flags + ["reextraction_resolved_by_grounding"]
+        ))
+        merged.reasoning = (
+            f"{merged.reasoning} [other pass read '{loser.value}', which could not be "
+            "verified against the page; using the grounded reading]"
+        ).strip()
+        return merged
 
     if a and b and not agree:
         loser, winner = (first, second) if second.final_confidence >= first.final_confidence else (second, first)
