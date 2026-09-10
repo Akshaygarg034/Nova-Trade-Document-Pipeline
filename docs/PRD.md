@@ -33,8 +33,6 @@ them. Nova is built on that idea: one generic engine, everything
 customer-specific kept in config, and agents that run with real controls —
 tenant isolation, audit trails and cost limits.
 
-*(195 words)*
-
 ### What is the FDE model and why does GoComet use it for Nova?
 
 A Forward Deployed Engineer does the discovery, the design, the build and the
@@ -57,8 +55,6 @@ There is a second reason. Nova is early, so the engine's shape is still being
 decided. Whoever sets up the first ten clients finds out which things really
 vary between customers and which only look like they do. That has to feed
 straight back into the platform.
-
-*(197 words)*
 
 ### What does "System of Outcomes" mean?
 
@@ -84,8 +80,6 @@ The real difference is responsibility. A System of Record is wrong when the
 data is wrong. A System of Outcomes is wrong when the shipment is late, even
 if every stored field was correct. That is harder to build and harder to sell.
 It is also why trust and evidence matter more here than features.
-
-*(198 words)*
 
 ---
 
