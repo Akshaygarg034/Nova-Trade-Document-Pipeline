@@ -1,7 +1,9 @@
+*.bak
 *.pyc
 .env
 .venv/
 __pycache__/
+data/
 data/*.db
 data/*.sqlite*
 data/extract_cache/
@@ -9,6 +11,8 @@ data/reading_cache/
 data/renders/
 data/ui-shots/
 data/uploads/
+evals/last_eval.json
 samples/_raw/
+submission/
 ui/dist/
 ui/node_modules/
